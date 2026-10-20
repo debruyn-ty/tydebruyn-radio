@@ -21,6 +21,7 @@
   let transitionId = 0;
   let preloadedTrackId = "";
   let transitioning = false;
+  let clockOffset = 0;
   const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
 
   let storedVolume = NaN;
@@ -45,7 +46,7 @@
     if (!playlist.length) return null;
     const total = playlist.reduce((sum, track) => sum + track.duration, 0);
     if (!total) return null;
-    const elapsed = ((time - window.RADIO_EPOCH_MS) / 1000 % total + total) % total;
+    const elapsed = ((time + clockOffset - window.RADIO_EPOCH_MS) / 1000 % total + total) % total;
     let cursor = 0;
     for (let index = 0; index < playlist.length; index += 1) {
       const track = playlist[index];
@@ -130,22 +131,14 @@
       }
       activeDeck = incomingIndex;
       player.classList.add("is-playing");
-      const started = performance.now();
-      const fade = (timestamp) => {
-        const progress = Math.min(1, (timestamp - started) / 2500);
-        incoming.volume = Number(volume.value) * progress;
-        outgoing.volume = Number(volume.value) * (1 - progress);
-        if (progress < 1) requestAnimationFrame(fade);
-        else {
-          outgoing.pause();
-          outgoing.removeAttribute("src");
-          outgoing.load();
-          preloadedTrackId = "";
-          transitioning = false;
-          preloadUpcoming(next);
-        }
-      };
-      requestAnimationFrame(fade);
+        incoming.volume = Number(volume.value);
+        outgoing.pause();
+        outgoing.volume = Number(volume.value);
+        outgoing.removeAttribute("src");
+        outgoing.load();
+        preloadedTrackId = "";
+        transitioning = false;
+        preloadUpcoming(next);
     }
     activeDeck = incomingIndex;
     if (!(shouldPlay || !outgoing.paused)) {
@@ -217,6 +210,19 @@
     if (shouldPlay || (!audio.paused && audio.readyState < 3)) startAudio();
   }
 
+  async function synchronizeClock() {
+    try {
+      const started = Date.now();
+      const response = await fetch(`playlist.js?clock=${started}`, { cache: "no-store" });
+      const date = response.headers.get("date");
+      if (!date) return;
+      const midpoint = started + (Date.now() - started) / 2;
+      clockOffset = Date.parse(date) - midpoint;
+    } catch (error) {
+      // The local clock remains the fallback when the hosting response has no Date header.
+    }
+  }
+
   function revealVolume() {
     controls.classList.add("volume-open");
     volumeButton.setAttribute("aria-expanded", "true");
@@ -253,6 +259,6 @@
     }
   }, 250);
 
-  synchronize(true);
-  setInterval(() => synchronize(false), 30000);
+  synchronizeClock().then(() => synchronize(true));
+  setInterval(() => synchronizeClock().then(() => synchronize(false)), 30000);
 })();
