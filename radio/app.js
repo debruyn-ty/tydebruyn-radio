@@ -6,7 +6,6 @@
   const artist = document.querySelector("#artist");
   const fill = document.querySelector("#progress-fill");
   const status = document.querySelector("#status");
-  const listen = document.querySelector("#listen-button");
   const controls = document.querySelector(".controls");
   const volumeButton = document.querySelector("#volume-button");
   const volume = document.querySelector("#volume");
@@ -42,14 +41,12 @@
       title.textContent = "Ty deBruyn Radio";
       artist.textContent = "Add tracks to radio/playlist.js";
       status.textContent = "The station is not configured with any music yet.";
-      listen.hidden = true;
       player.classList.remove("is-playing");
       return;
     }
     if (station && station.index === next.index && audio.src) return;
     station = next;
-    listen.hidden = false;
-    status.textContent = "Tap to listen";
+    status.textContent = "";
     title.textContent = next.track.title || "Untitled track";
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
     artwork.removeAttribute("src");
@@ -70,11 +67,9 @@
       audio.currentTime = expectedPosition();
       await audio.play();
       player.classList.add("is-playing");
-      listen.hidden = true;
       status.textContent = "";
     } catch (error) {
-      listen.hidden = false;
-      status.textContent = "Playback is waiting for your interaction.";
+      status.textContent = "Playback is blocked until the browser allows audio.";
     }
   }
 
@@ -102,17 +97,23 @@
   }
 
   volumeButton.addEventListener("click", revealVolume);
+  volumeButton.addEventListener("pointerdown", () => startAudio());
+  volume.addEventListener("pointerdown", () => {
+    revealVolume();
+    startAudio();
+  });
   volume.addEventListener("input", () => {
     audio.volume = Number(volume.value);
     try { localStorage.setItem("tydebruyn-radio-volume", volume.value); } catch (error) { /* optional preference */ }
     revealVolume();
   });
-  listen.addEventListener("click", () => synchronize(true));
   audio.addEventListener("play", () => player.classList.add("is-playing"));
-  audio.addEventListener("pause", () => player.classList.remove("is-playing"));
+  audio.addEventListener("pause", () => {
+    player.classList.remove("is-playing");
+    if (station) setTimeout(() => startAudio(), 250);
+  });
   audio.addEventListener("error", () => {
     player.classList.remove("is-playing");
-    listen.hidden = false;
     status.textContent = "Audio could not be loaded. Check the MP3 file in the repository.";
   });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) synchronize(!audio.paused); });
@@ -124,6 +125,6 @@
     if (!audio.paused && Math.abs(audio.currentTime - next.position) > 2) audio.currentTime = next.position;
   }, 250);
 
-  synchronize();
-  setInterval(() => synchronize(!audio.paused), 30000);
+  synchronize(true);
+  setInterval(() => synchronize(true), 30000);
 })();

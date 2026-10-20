@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Ty deBruyn Radio — a shared stream of carefully selected music.">
   <title>Ty deBruyn Radio</title>
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <main class="player" aria-labelledby="track-title">
@@ -18,7 +18,7 @@
 
     <section class="track-info">
       <div class="progress" aria-hidden="true">
-        <span class="progress-dot"></span><span class="progress-line"><i id="progress-fill"></i></span><span class="progress-dot"></span>
+        <span class="progress-line"><i id="progress-fill"></i></span>
       </div>
       <h1 id="track-title">Ty deBruyn Radio</h1>
       <p id="artist">Loading the station…</p>
@@ -33,11 +33,10 @@
       </label>
     </section>
 
-    <button id="listen-button" class="listen-button" type="button" hidden>Tap to listen</button>
     <p id="status" class="status" role="status" aria-live="polite"></p>
-    <audio id="audio" preload="auto"></audio>
+    <audio id="audio" preload="auto" autoplay></audio>
   </main>
   <script src="playlist.js"></script>
-  <script src="app.js?v=2" defer></script>
+  <script src="app.js?v=3" defer></script>
 </body>
 </html>
