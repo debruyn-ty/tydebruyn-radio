@@ -1,0 +1,6 @@
+private/*.json
+private/*.lock
+private/*.tmp.*
+radio/assets/artwork/*
+!radio/assets/artwork/.gitkeep
+audio/*.mp3
