@@ -13,11 +13,24 @@
   const startOverlay = document.querySelector("#start-overlay");
   let station = null;
   let volumeTimer = 0;
+  let rotation = 0;
+  let lastFrame = performance.now();
 
   let storedVolume = NaN;
   try { storedVolume = Number.parseFloat(localStorage.getItem("tydebruyn-radio-volume")); } catch (error) { /* optional preference */ }
   if (Number.isFinite(storedVolume)) volume.value = String(Math.max(0, Math.min(1, storedVolume)));
   audio.volume = Number(volume.value);
+
+  function animateRecord(timestamp) {
+    const elapsed = Math.min(100, timestamp - lastFrame);
+    lastFrame = timestamp;
+    if (!audio.paused && !audio.ended && !audio.error) {
+      rotation = (rotation + elapsed * 0.03) % 360;
+      record.style.transform = `rotate(${rotation}deg) translateZ(0)`;
+    }
+    requestAnimationFrame(animateRecord);
+  }
+  requestAnimationFrame(animateRecord);
 
   function stateAt(time = Date.now()) {
     const playlist = window.RADIO_PLAYLIST || [];
