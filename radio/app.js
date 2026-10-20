@@ -23,6 +23,7 @@
   let clockOffset = 0;
   let transitionId = 0;
   let transitionPending = false;
+  let endedNextIndex = -1;
 
   audio.autoplay = false;
   let storedVolume = NaN;
@@ -231,6 +232,15 @@
   startOverlay.addEventListener("click", startAudio);
   audio.addEventListener("playing", () => player.classList.add("is-playing"));
   audio.addEventListener("pause", () => player.classList.remove("is-playing"));
+  audio.addEventListener("ended", () => {
+    const current = stateAt();
+    if (station && current && current.index === station.index && playlist.length > 1) {
+      endedNextIndex = (station.index + 1) % playlist.length;
+      station = null;
+      return;
+    }
+    synchronize(true);
+  });
   audio.addEventListener("error", () => {
     if (!transitionPending) status.textContent = "Audio could not be loaded.";
   });
@@ -240,6 +250,11 @@
   setInterval(() => {
     const next = stateAt();
     if (!next) return;
+    if (endedNextIndex >= 0) {
+      if (next.index !== endedNextIndex) return;
+      endedNextIndex = -1;
+      synchronize(true);
+    }
     if (!station || station.index !== next.index) synchronize(!audio.paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
     if (!audio.paused && audio.readyState >= 3 && Math.abs(audio.currentTime - next.position) > 4) {
