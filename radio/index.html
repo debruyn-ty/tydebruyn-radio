@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Ty deBruyn Radio — a shared stream of carefully selected music.">
   <title>Ty deBruyn Radio</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
   <main class="player" aria-labelledby="track-title">
@@ -36,7 +36,10 @@
     <p id="status" class="status" role="status" aria-live="polite"></p>
     <audio id="audio" preload="auto" autoplay></audio>
   </main>
+  <button id="start-overlay" class="start-overlay" type="button" aria-label="Tap anywhere to start listening">
+    <span>Tap Anywhere<br>To<br>Start Listening</span>
+  </button>
   <script src="playlist.js"></script>
-  <script src="app.js?v=3" defer></script>
+  <script src="app.js?v=4" defer></script>
 </body>
 </html>

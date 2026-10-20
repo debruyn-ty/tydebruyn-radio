@@ -10,6 +10,7 @@
   const volumeButton = document.querySelector("#volume-button");
   const volume = document.querySelector("#volume");
   const player = document.querySelector(".player");
+  const startOverlay = document.querySelector("#start-overlay");
   let station = null;
   let volumeTimer = 0;
 
@@ -41,6 +42,7 @@
       title.textContent = "Ty deBruyn Radio";
       artist.textContent = "Add tracks to radio/playlist.js";
       status.textContent = "The station is not configured with any music yet.";
+      startOverlay.classList.add("is-hidden");
       player.classList.remove("is-playing");
       return;
     }
@@ -67,6 +69,7 @@
       audio.currentTime = expectedPosition();
       await audio.play();
       player.classList.add("is-playing");
+      startOverlay.classList.add("is-hidden");
       status.textContent = "";
     } catch (error) {
       status.textContent = "Playback is blocked until the browser allows audio.";
@@ -107,6 +110,7 @@
     try { localStorage.setItem("tydebruyn-radio-volume", volume.value); } catch (error) { /* optional preference */ }
     revealVolume();
   });
+  startOverlay.addEventListener("click", () => startAudio());
   audio.addEventListener("play", () => player.classList.add("is-playing"));
   audio.addEventListener("pause", () => {
     player.classList.remove("is-playing");

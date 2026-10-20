@@ -26,6 +26,9 @@ h1 { font-size: clamp(2.1rem, 9vw, 6.5rem); line-height: .92; letter-spacing: -.
 .controls.volume-open .volume-slider { width: min(320px, calc(100% - 55px)); opacity: 1; }
 input[type=range] { width: 100%; height: 12px; accent-color: var(--ink); cursor: pointer; }
 .status { min-height: 1.2em; color: var(--muted); font-size: .82rem; text-align: center; margin: 1rem 0 0; }
+.start-overlay { position: fixed; z-index: 10; inset: 0; width: 100%; height: 100%; border: 0; padding: max(2rem, env(safe-area-inset-top)) max(1.5rem, 6vw) max(2rem, env(safe-area-inset-bottom)); display: grid; place-items: center; background: rgba(145, 137, 137, .72); color: #fff; cursor: pointer; text-align: left; }
+.start-overlay span { width: min(100%, 680px); font-size: clamp(3.3rem, 13vw, 9rem); font-weight: 800; line-height: .88; letter-spacing: -.08em; }
+.start-overlay.is-hidden { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 @media (orientation: landscape) and (max-height: 600px) { .player { grid-template-columns: 40% 60%; grid-template-rows: 1fr auto; gap: 0 2rem; } .record { width: min(38vw, 300px); } .track-info { margin: 0; } .controls { margin: 1rem 0 0; } .status { grid-column: 1 / -1; } }
