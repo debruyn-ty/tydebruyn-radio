@@ -4,4 +4,116 @@
  */
 window.RADIO_EPOCH_MS = Date.parse("2026-10-20T00:00:00Z");
 window.RADIO_PLAYLIST = [
+  {
+    "id": "fad028c62ecabec1",
+    "title": "Flippin'",
+    "artist": "Ty deBruyn",
+    "duration": 189.414,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2001%20-%20Flippin%27.mp3",
+    "artwork": "assets/artwork/fad028c62ecabec1.png"
+  },
+  {
+    "id": "2349600b4469c797",
+    "title": "Can't Do It Alone",
+    "artist": "Ty deBruyn",
+    "duration": 173.845,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2002%20-%20Can%27t%20Do%20It%20Alone.mp3",
+    "artwork": "assets/artwork/2349600b4469c797.png"
+  },
+  {
+    "id": "c56694d24ba7c1a3",
+    "title": "Flutter",
+    "artist": "Ty deBruyn",
+    "duration": 192.026,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2003%20-%20Flutter.mp3",
+    "artwork": "assets/artwork/c56694d24ba7c1a3.png"
+  },
+  {
+    "id": "9c62d61c9b4c681d",
+    "title": "Another Day, Another Dollar",
+    "artist": "Ty deBruyn",
+    "duration": 159.504,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2004%20-%20Another%20Day%2C%20Another%20Dollar.mp3",
+    "artwork": "assets/artwork/9c62d61c9b4c681d.png"
+  },
+  {
+    "id": "37221775aae8fc9b",
+    "title": "Throw Some",
+    "artist": "Ty deBruyn",
+    "duration": 198.426,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2005%20-%20Throw%20Some.mp3",
+    "artwork": "assets/artwork/37221775aae8fc9b.png"
+  },
+  {
+    "id": "018a8372882cb403",
+    "title": "I Got it, You Got It",
+    "artist": "Ty deBruyn",
+    "duration": 219.455,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2006%20-%20I%20Got%20it%2C%20You%20Got%20It.mp3",
+    "artwork": "assets/artwork/018a8372882cb403.png"
+  },
+  {
+    "id": "66ef5cbe81125884",
+    "title": "Can You Dig It?",
+    "artist": "Ty deBruyn",
+    "duration": 199.21,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2007%20-%20Can%20You%20Dig%20It.mp3",
+    "artwork": "assets/artwork/66ef5cbe81125884.png"
+  },
+  {
+    "id": "bf5acf1d08fa9a85",
+    "title": "Atonement",
+    "artist": "Ty deBruyn",
+    "duration": 326.557,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2000%20-%20Atonement.mp3",
+    "artwork": "assets/artwork/bf5acf1d08fa9a85.png"
+  },
+  {
+    "id": "a89d32872edbd84e",
+    "title": "Distruption Lottery",
+    "artist": "Ty deBruyn",
+    "duration": 151.458,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2001%20-%20Distruption%20Lottery.mp3",
+    "artwork": "assets/artwork/a89d32872edbd84e.png"
+  },
+  {
+    "id": "1b1a432573ae4390",
+    "title": "Johnny Dollar",
+    "artist": "Ty deBruyn",
+    "duration": 245.29,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2002%20-%20Johnny%20Dollar.mp3",
+    "artwork": "assets/artwork/1b1a432573ae4390.png"
+  },
+  {
+    "id": "78d9e2b1d6fcaff3",
+    "title": "So What",
+    "artist": "Ty deBruyn",
+    "duration": 221.179,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2003%20-%20So%20What.mp3",
+    "artwork": "assets/artwork/78d9e2b1d6fcaff3.png"
+  },
+  {
+    "id": "9d9d150b8dbcdb23",
+    "title": "LUNDO",
+    "artist": "Ty deBruyn",
+    "duration": 219.481,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2004%20-%20LUNDO.mp3",
+    "artwork": "assets/artwork/9d9d150b8dbcdb23.png"
+  },
+  {
+    "id": "b834212bd94e4eb6",
+    "title": "Give It Up",
+    "artist": "Ty deBruyn",
+    "duration": 246.909,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2006%20-%20Give%20It%20Up.mp3",
+    "artwork": "assets/artwork/b834212bd94e4eb6.png"
+  },
+  {
+    "id": "2eaa3156fadbb1e5",
+    "title": "You Bet Your Life!",
+    "artist": "Ty deBruyn",
+    "duration": 194.194,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2007%20-%20You%20Bet%20Your%20Life%21.mp3",
+    "artwork": "assets/artwork/2eaa3156fadbb1e5.png"
+  }
 ];
