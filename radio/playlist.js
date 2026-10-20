@@ -5,6 +5,22 @@
 window.RADIO_EPOCH_MS = Date.parse("2026-10-20T00:00:00Z");
 window.RADIO_PLAYLIST = [
   {
+    "id": "0c5872fc84ac9136",
+    "title": "ADRENALINE",
+    "artist": "Ty deBruyn",
+    "duration": 241.763,
+    "url": "../mp3s/Ty%20deBruyn%20-%20ADRENALINE.mp3",
+    "artwork": "assets/artwork/0c5872fc84ac9136.png"
+  },
+  {
+    "id": "bf05ea3e866321b1",
+    "title": "Anything",
+    "artist": "Ty deBruyn",
+    "duration": 160.601,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Anything.mp3",
+    "artwork": "assets/artwork/bf05ea3e866321b1.png"
+  },
+  {
     "id": "fad028c62ecabec1",
     "title": "Flippin'",
     "artist": "Ty deBruyn",
@@ -59,6 +75,62 @@ window.RADIO_PLAYLIST = [
     "duration": 199.21,
     "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2007%20-%20Can%20You%20Dig%20It.mp3",
     "artwork": "assets/artwork/66ef5cbe81125884.png"
+  },
+  {
+    "id": "10d9945b28f84799",
+    "title": "DS LITE",
+    "artist": "Ty deBruyn",
+    "duration": 197.851,
+    "url": "../mp3s/Ty%20deBruyn%20-%20DS%20LITE.mp3",
+    "artwork": "assets/artwork/10d9945b28f84799.png"
+  },
+  {
+    "id": "827dcb1dceead25b",
+    "title": "Everybody Get Down",
+    "artist": "Ty deBruyn",
+    "duration": 153.626,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Everybody%20Get%20Down.mp3",
+    "artwork": "assets/artwork/827dcb1dceead25b.jpg"
+  },
+  {
+    "id": "3520990d81853c80",
+    "title": "Hear This",
+    "artist": "Ty deBruyn",
+    "duration": 138.031,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Hear%20This.mp3",
+    "artwork": "assets/artwork/3520990d81853c80.png"
+  },
+  {
+    "id": "df0f8eea13d7b2fe",
+    "title": "Make Me Feel",
+    "artist": "Ty deBruyn",
+    "duration": 204.852,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Make%20Me%20Feel.mp3",
+    "artwork": "assets/artwork/df0f8eea13d7b2fe.png"
+  },
+  {
+    "id": "15fcb257952a1dec",
+    "title": "New York",
+    "artist": "Ty deBruyn",
+    "duration": 192.026,
+    "url": "../mp3s/Ty%20deBruyn%20-%20New%20York.mp3",
+    "artwork": "assets/artwork/15fcb257952a1dec.png"
+  },
+  {
+    "id": "c79ff88490daf23d",
+    "title": "PSP 1000",
+    "artist": "Ty deBruyn",
+    "duration": 204.042,
+    "url": "../mp3s/Ty%20deBruyn%20-%20PSP%201000.mp3",
+    "artwork": "assets/artwork/c79ff88490daf23d.png"
+  },
+  {
+    "id": "79be7cf37a2fc53e",
+    "title": "Right Now",
+    "artist": "Ty deBruyn",
+    "duration": 313.548,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Right%20Now.mp3",
+    "artwork": "assets/artwork/79be7cf37a2fc53e.png"
   },
   {
     "id": "bf5acf1d08fa9a85",
