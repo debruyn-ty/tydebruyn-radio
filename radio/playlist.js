@@ -93,14 +93,6 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/827dcb1dceead25b.jpg"
   },
   {
-    "id": "3520990d81853c80",
-    "title": "Hear This",
-    "artist": "Ty deBruyn",
-    "duration": 138.031,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Hear%20This.mp3",
-    "artwork": "assets/artwork/3520990d81853c80.png"
-  },
-  {
     "id": "df0f8eea13d7b2fe",
     "title": "Make Me Feel",
     "artist": "Ty deBruyn",

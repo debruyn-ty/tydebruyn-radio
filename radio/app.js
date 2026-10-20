@@ -4,6 +4,7 @@
   const artworkLayers = [document.querySelector("#artwork"), document.querySelector("#artwork-next")];
   const title = document.querySelector("#track-title");
   const artist = document.querySelector("#artist");
+  const trackInfo = document.querySelector("#track-info");
   const fill = document.querySelector("#progress-fill");
   const status = document.querySelector("#status");
   const controls = document.querySelector(".controls");
@@ -18,6 +19,7 @@
   let rotation = 0;
   let lastFrame = performance.now();
   let transitionId = 0;
+  const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
 
   let storedVolume = NaN;
   try { storedVolume = Number.parseFloat(localStorage.getItem("tydebruyn-radio-volume")); } catch (error) { /* optional preference */ }
@@ -56,17 +58,18 @@
     const image = artworkLayers[nextLayer];
     image.removeAttribute("src");
     image.classList.remove("is-visible");
-    if (!next.track.artwork) {
-      artworkLayers[artworkLayer].classList.remove("is-visible");
-      artworkLayer = nextLayer;
-      return;
-    }
+    const fallback = fallbackArtwork[next.index % fallbackArtwork.length];
+    const artworkUrl = next.track.artwork || fallback;
     image.onload = () => {
       image.classList.add("is-visible");
       artworkLayers[artworkLayer].classList.remove("is-visible");
       artworkLayer = nextLayer;
     };
-    image.src = next.track.artwork;
+    image.onerror = () => {
+      image.onerror = null;
+      image.src = fallback;
+    };
+    image.src = artworkUrl;
   }
 
   function prepareDeck(deck, next) {
@@ -92,7 +95,7 @@
       try { await incoming.play(); } catch (error) { return; }
       const started = performance.now();
       const fade = (timestamp) => {
-        const progress = Math.min(1, (timestamp - started) / 1200);
+        const progress = Math.min(1, (timestamp - started) / 2500);
         incoming.volume = Number(volume.value) * progress;
         outgoing.volume = Number(volume.value) * (1 - progress);
         if (progress < 1) requestAnimationFrame(fade);
@@ -116,6 +119,9 @@
     if (station && station.index === next.index && activeAudio().src) return;
     const changingTrack = Boolean(station);
     station = next;
+    trackInfo.classList.remove("is-transitioning");
+    void trackInfo.offsetWidth;
+    trackInfo.classList.add("is-transitioning");
     status.textContent = "";
     title.textContent = next.track.title || "Untitled track";
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
@@ -136,7 +142,8 @@
   async function startAudio() {
     const audio = activeAudio();
     try {
-      audio.currentTime = expectedPosition();
+      const position = expectedPosition();
+      if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
       await audio.play();
       player.classList.add("is-playing");
       startOverlay.classList.add("is-hidden");
@@ -157,7 +164,7 @@
     const correct = () => { if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position; };
     if (audio.readyState >= 1) correct();
     else audio.addEventListener("loadedmetadata", correct, { once: true });
-    if (shouldPlay || !audio.paused) startAudio();
+    if (shouldPlay || (!audio.paused && audio.readyState < 3)) startAudio();
   }
 
   function revealVolume() {
@@ -190,9 +197,11 @@
     if (!next) return;
     if (!station || station.index !== next.index) synchronize(!activeAudio().paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
-    if (!activeAudio().paused && Math.abs(activeAudio().currentTime - next.position) > 2) activeAudio().currentTime = next.position;
+    if (!activeAudio().paused && activeAudio().readyState >= 3 && Math.abs(activeAudio().currentTime - next.position) > 4) {
+      activeAudio().currentTime = next.position;
+    }
   }, 250);
 
   synchronize(true);
-  setInterval(() => synchronize(true), 30000);
+  setInterval(() => synchronize(false), 30000);
 })();
