@@ -20,6 +20,7 @@
   let lastFrame = performance.now();
   let transitionId = 0;
   let preloadedTrackId = "";
+  let transitioning = false;
   const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
 
   let storedVolume = NaN;
@@ -62,6 +63,7 @@
   }
 
   function preloadUpcoming(current) {
+    if (transitioning) return;
     const upcoming = nextTrackFor(current);
     if (!upcoming || preloadedTrackId === upcoming.track.id) return;
     const preloadDeck = decks[(activeDeck + 1) % 2];
@@ -104,7 +106,7 @@
       deck.load();
     }
     return new Promise((resolve) => {
-      if (deck.readyState >= 1) { resolve(); return; }
+      if (deck.readyState >= 1 && deck.src === url) { resolve(); return; }
       deck.addEventListener("loadedmetadata", resolve, { once: true });
       deck.addEventListener("error", resolve, { once: true });
     });
@@ -112,15 +114,22 @@
 
   async function crossfade(next, shouldPlay) {
     const id = ++transitionId;
+    transitioning = true;
     const outgoing = activeAudio();
     const incomingIndex = (activeDeck + 1) % 2;
     const incoming = decks[incomingIndex];
     await prepareDeck(incoming, next);
-    if (id !== transitionId) return;
+    if (id !== transitionId) { transitioning = false; return; }
     incoming.currentTime = next.position;
     incoming.volume = shouldPlay || !outgoing.paused ? 0 : Number(volume.value);
     if (shouldPlay || !outgoing.paused) {
-      try { await incoming.play(); } catch (error) { return; }
+      try { await incoming.play(); } catch (error) {
+        status.textContent = "The next track could not start.";
+        transitioning = false;
+        return;
+      }
+      activeDeck = incomingIndex;
+      player.classList.add("is-playing");
       const started = performance.now();
       const fade = (timestamp) => {
         const progress = Math.min(1, (timestamp - started) / 2500);
@@ -132,6 +141,7 @@
           outgoing.removeAttribute("src");
           outgoing.load();
           preloadedTrackId = "";
+          transitioning = false;
           preloadUpcoming(next);
         }
       };
@@ -140,6 +150,7 @@
     activeDeck = incomingIndex;
     if (!(shouldPlay || !outgoing.paused)) {
       preloadedTrackId = "";
+      transitioning = false;
       preloadUpcoming(next);
     }
   }
@@ -157,7 +168,6 @@
     if (station && station.index === next.index && activeAudio().src) return;
     const changingTrack = Boolean(station);
     station = next;
-    preloadUpcoming(next);
     trackInfo.classList.remove("is-transitioning");
     void trackInfo.offsetWidth;
     trackInfo.classList.add("is-transitioning");
@@ -169,6 +179,7 @@
     else {
       activeAudio().src = next.track.url;
       activeAudio().load();
+      preloadUpcoming(next);
     }
   }
 
