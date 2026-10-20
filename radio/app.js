@@ -1,5 +1,5 @@
 (() => {
-  const decks = [document.querySelector("#audio-a"), document.querySelector("#audio-b")];
+  const audio = document.querySelector("#audio-a");
   const record = document.querySelector("#record");
   const artworkLayers = [document.querySelector("#artwork"), document.querySelector("#artwork-next")];
   const title = document.querySelector("#track-title");
@@ -12,29 +12,28 @@
   const volume = document.querySelector("#volume");
   const player = document.querySelector(".player");
   const startOverlay = document.querySelector("#start-overlay");
+  const playlist = window.RADIO_PLAYLIST || [];
+  const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
   let station = null;
-  let activeDeck = 0;
   let artworkLayer = 0;
+  let artworkRequestId = 0;
   let volumeTimer = 0;
   let rotation = 0;
   let lastFrame = performance.now();
-  let transitionId = 0;
-  let preloadedTrackId = "";
-  let transitioning = false;
   let clockOffset = 0;
-  let artworkRequestId = 0;
-  const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
+  let transitionId = 0;
+  let transitionPending = false;
 
+  audio.autoplay = false;
   let storedVolume = NaN;
   try { storedVolume = Number.parseFloat(localStorage.getItem("tydebruyn-radio-volume")); } catch (error) { /* optional preference */ }
   if (Number.isFinite(storedVolume)) volume.value = String(Math.max(0, Math.min(1, storedVolume)));
-  decks.forEach((deck) => { deck.volume = Number(volume.value); });
+  audio.volume = Number(volume.value);
 
-  function activeAudio() { return decks[activeDeck]; }
   function animateRecord(timestamp) {
     const elapsed = Math.min(100, timestamp - lastFrame);
     lastFrame = timestamp;
-    if (!activeAudio().paused && !activeAudio().ended) {
+    if (!audio.paused && !audio.ended) {
       rotation = (rotation + elapsed * 0.03) % 360;
       record.style.transform = `rotate(${rotation}deg) translateZ(0)`;
     }
@@ -43,10 +42,8 @@
   requestAnimationFrame(animateRecord);
 
   function stateAt(time = Date.now()) {
-    const playlist = window.RADIO_PLAYLIST || [];
-    if (!playlist.length) return null;
     const total = playlist.reduce((sum, track) => sum + track.duration, 0);
-    if (!total) return null;
+    if (!playlist.length || !total) return null;
     const elapsed = ((time + clockOffset - window.RADIO_EPOCH_MS) / 1000 % total + total) % total;
     let cursor = 0;
     for (let index = 0; index < playlist.length; index += 1) {
@@ -57,39 +54,11 @@
     return { track: playlist[0], index: 0, position: 0 };
   }
 
-  function nextTrackFor(current) {
-    const playlist = window.RADIO_PLAYLIST || [];
-    if (!current || playlist.length < 2) return null;
-    const index = (current.index + 1) % playlist.length;
-    return { track: playlist[index], index, position: 0 };
-  }
-
-  function preloadUpcoming(current) {
-    if (transitioning) return;
-    const upcoming = nextTrackFor(current);
-    if (!upcoming || preloadedTrackId === upcoming.track.id) return;
-    const preloadDeck = decks[(activeDeck + 1) % 2];
-    preloadedTrackId = upcoming.track.id;
-    const url = new URL(upcoming.track.url, window.location.href).href;
-    if (preloadDeck.src !== url) {
-      preloadDeck.src = upcoming.track.url;
-      preloadDeck.load();
-    }
-    if (upcoming.track.artwork) {
-      const image = new Image();
-      image.decoding = "async";
-      image.src = upcoming.track.artwork;
-    }
-  }
-
   function setArtwork(next) {
     const requestId = ++artworkRequestId;
     const nextLayer = (artworkLayer + 1) % 2;
     const image = artworkLayers[nextLayer];
-    image.removeAttribute("src");
-    image.classList.remove("is-visible");
     const fallback = fallbackArtwork[next.index % fallbackArtwork.length];
-    const artworkUrl = next.track.artwork || fallback;
     image.onload = () => {
       if (requestId !== artworkRequestId) return;
       image.classList.add("is-visible");
@@ -101,7 +70,8 @@
       image.onerror = null;
       image.src = fallback;
     };
-    image.src = artworkUrl;
+    image.classList.remove("is-visible");
+    image.src = next.track.artwork || fallback;
   }
 
   function renderTrack(next) {
@@ -113,61 +83,75 @@
     setArtwork(next);
   }
 
-  function prepareDeck(deck, next) {
-    const url = new URL(next.track.url, window.location.href).href;
-    if (deck.src !== url) {
-      deck.src = next.track.url;
-      deck.load();
-    }
+  function waitForAudioReady(id) {
     return new Promise((resolve) => {
-      if (deck.readyState >= 1 && deck.src === url) { resolve(); return; }
-      deck.addEventListener("loadedmetadata", resolve, { once: true });
-      deck.addEventListener("error", resolve, { once: true });
+      if (audio.readyState >= 1) {
+        resolve(id === transitionId);
+        return;
+      }
+      const finish = (loaded) => {
+        audio.removeEventListener("loadedmetadata", onLoaded);
+        audio.removeEventListener("error", onError);
+        resolve(loaded && id === transitionId);
+      };
+      const onLoaded = () => finish(true);
+      const onError = () => finish(false);
+      audio.addEventListener("loadedmetadata", onLoaded, { once: true });
+      audio.addEventListener("error", onError, { once: true });
     });
   }
 
-  async function crossfade(next, shouldPlay) {
+  async function loadTrack(next, shouldPlay) {
     const id = ++transitionId;
-    transitioning = true;
-    const outgoing = activeAudio();
-    const incomingIndex = (activeDeck + 1) % 2;
-    const incoming = decks[incomingIndex];
-    await prepareDeck(incoming, next);
-    if (id !== transitionId) { transitioning = false; return; }
-    incoming.currentTime = next.position;
-    incoming.volume = shouldPlay || !outgoing.paused ? 0 : Number(volume.value);
-    if (shouldPlay || !outgoing.paused) {
-      try { await incoming.play(); } catch (error) {
-        status.textContent = "The next track could not start.";
-        transitioning = false;
-        return;
-      }
-      activeDeck = incomingIndex;
-      player.classList.add("is-playing");
-      station = next;
-      renderTrack(next);
-        incoming.volume = Number(volume.value);
-        outgoing.pause();
-        outgoing.volume = Number(volume.value);
-        outgoing.removeAttribute("src");
-        outgoing.load();
-        preloadedTrackId = "";
-        transitioning = false;
-        preloadUpcoming(next);
+    transitionPending = true;
+    const url = new URL(next.track.url, window.location.href).href;
+    audio.pause();
+    if (audio.src !== url) {
+      audio.src = next.track.url;
+      audio.load();
     }
-    activeDeck = incomingIndex;
-    if (!(shouldPlay || !outgoing.paused)) {
-      station = next;
-      renderTrack(next);
-      preloadedTrackId = "";
-      transitioning = false;
-      preloadUpcoming(next);
+    const ready = await waitForAudioReady(id);
+    if (!ready) {
+      if (id === transitionId) {
+        transitionPending = false;
+        player.classList.remove("is-playing");
+        status.textContent = "Audio could not be loaded.";
+      }
+      return;
+    }
+    const current = stateAt();
+    if (!current || current.index !== next.index) {
+      transitionPending = false;
+      synchronize(shouldPlay);
+      return;
+    }
+    audio.currentTime = current.position;
+    station = next;
+    renderTrack(next);
+    if (!shouldPlay) {
+      transitionPending = false;
+      player.classList.remove("is-playing");
+      return;
+    }
+    try {
+      await audio.play();
+      if (id !== transitionId) return;
+      player.classList.add("is-playing");
+      startOverlay.classList.add("is-hidden");
+      status.textContent = "";
+      transitionPending = false;
+    } catch (error) {
+      transitionPending = false;
+      player.classList.remove("is-playing");
+      status.textContent = "Playback is blocked until the browser allows audio.";
     }
   }
 
   function setTrack(next, shouldPlay = false) {
     if (!next) {
       station = null;
+      audio.pause();
+      audio.removeAttribute("src");
       title.textContent = "Ty deBruyn Radio";
       artist.textContent = "Add tracks to radio/playlist.js";
       status.textContent = "The station is not configured with any music yet.";
@@ -175,29 +159,18 @@
       player.classList.remove("is-playing");
       return;
     }
-    if (station && station.index === next.index && activeAudio().src) return;
-    const changingTrack = Boolean(station);
-    if (transitioning) return;
+    if (transitionPending || (station && station.index === next.index && audio.src)) return;
     status.textContent = "";
-    if (changingTrack) crossfade(next, shouldPlay);
-    else {
-      station = next;
-      renderTrack(next);
-      setArtwork(next);
-      activeAudio().src = next.track.url;
-      activeAudio().load();
-      preloadUpcoming(next);
-    }
+    loadTrack(next, shouldPlay);
   }
 
   function expectedPosition() {
-    if (!station) return 0;
     const current = stateAt();
-    return current && current.index === station.index ? current.position : 0;
+    return current && station && current.index === station.index ? current.position : 0;
   }
 
   async function startAudio() {
-    const audio = activeAudio();
+    if (transitionPending) return;
     try {
       const position = expectedPosition();
       if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
@@ -212,16 +185,16 @@
 
   function synchronize(shouldPlay = false) {
     const next = stateAt();
-    const changingTrack = Boolean(station && next && station.index !== next.index);
+    if (!next) {
+      setTrack(null);
+      return;
+    }
+    const changingTrack = Boolean(station && station.index !== next.index);
     setTrack(next, shouldPlay);
-    if (!next) return;
-    if (changingTrack) return;
-    const audio = activeAudio();
+    if (changingTrack || transitionPending) return;
     const position = next.position;
-    const correct = () => { if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position; };
-    if (audio.readyState >= 1) correct();
-    else audio.addEventListener("loadedmetadata", correct, { once: true });
-    if (shouldPlay || (!audio.paused && audio.readyState < 3)) startAudio();
+    if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
+    if (shouldPlay && audio.paused) startAudio();
   }
 
   async function synchronizeClock() {
@@ -251,28 +224,29 @@
   volumeButton.addEventListener("pointerdown", startAudio);
   volume.addEventListener("pointerdown", () => { revealVolume(); startAudio(); });
   volume.addEventListener("input", () => {
-    decks.forEach((deck) => { deck.volume = Number(volume.value); });
+    audio.volume = Number(volume.value);
     try { localStorage.setItem("tydebruyn-radio-volume", volume.value); } catch (error) { /* optional preference */ }
     revealVolume();
   });
   startOverlay.addEventListener("click", startAudio);
-  decks.forEach((deck) => {
-    deck.addEventListener("playing", () => player.classList.add("is-playing"));
-    deck.addEventListener("pause", () => { if (deck === activeAudio()) player.classList.remove("is-playing"); });
-    deck.addEventListener("error", () => { if (deck === activeAudio()) status.textContent = "Audio could not be loaded."; });
+  audio.addEventListener("playing", () => player.classList.add("is-playing"));
+  audio.addEventListener("pause", () => player.classList.remove("is-playing"));
+  audio.addEventListener("error", () => {
+    if (!transitionPending) status.textContent = "Audio could not be loaded.";
   });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) synchronize(!activeAudio().paused); });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) synchronize(!audio.paused);
+  });
   setInterval(() => {
     const next = stateAt();
     if (!next) return;
-    preloadUpcoming(next);
-    if (!station || station.index !== next.index) synchronize(!activeAudio().paused);
+    if (!station || station.index !== next.index) synchronize(!audio.paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
-    if (!activeAudio().paused && activeAudio().readyState >= 3 && Math.abs(activeAudio().currentTime - next.position) > 4) {
-      activeAudio().currentTime = next.position;
+    if (!audio.paused && audio.readyState >= 3 && Math.abs(audio.currentTime - next.position) > 4) {
+      audio.currentTime = next.position;
     }
   }, 250);
 
   synchronizeClock().then(() => synchronize(true));
-  setInterval(() => synchronizeClock().then(() => synchronize(false)), 30000);
+  setInterval(() => synchronizeClock().then(() => synchronize(!audio.paused)), 30000);
 })();
