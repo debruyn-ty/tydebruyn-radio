@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Ty deBruyn Radio — a shared stream of carefully selected music.">
   <title>Ty deBruyn Radio</title>
-  <link rel="stylesheet" href="styles.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
   <main class="player" aria-labelledby="track-title">
@@ -17,6 +17,7 @@
     </section>
 
     <section class="track-info">
+      <p class="now-playing">NOW PLAYING <span>[LIVE]</span>:</p>
       <div class="progress" aria-hidden="true">
         <span class="progress-line"><i id="progress-fill"></i></span>
       </div>
@@ -33,6 +34,12 @@
       </label>
     </section>
 
+    <nav class="social-links" aria-label="Ty deBruyn music links">
+      <a href="https://soundcloud.com/ty-debruyn" target="_blank" rel="noopener noreferrer">SoundCloud</a>
+      <a href="https://open.spotify.com/artist/0Rsh2Yg7biqC1TWyGqCqHf" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a href="https://music.apple.com/us/artist/ty-debruyn/6817621813" target="_blank" rel="noopener noreferrer">Apple Music</a>
+    </nav>
+
     <p id="status" class="status" role="status" aria-live="polite"></p>
     <audio id="audio" preload="auto" autoplay></audio>
   </main>
@@ -40,6 +47,6 @@
     <span>Tap Anywhere<br>To<br>Start Listening</span>
   </button>
   <script src="playlist.js"></script>
-  <script src="app.js?v=6" defer></script>
+  <script src="app.js?v=7" defer></script>
 </body>
 </html>
