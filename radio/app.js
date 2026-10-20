@@ -19,6 +19,7 @@
   let rotation = 0;
   let lastFrame = performance.now();
   let transitionId = 0;
+  let preloadedTrackId = "";
   const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
 
   let storedVolume = NaN;
@@ -53,6 +54,30 @@
     return { track: playlist[0], index: 0, position: 0 };
   }
 
+  function nextTrackFor(current) {
+    const playlist = window.RADIO_PLAYLIST || [];
+    if (!current || playlist.length < 2) return null;
+    const index = (current.index + 1) % playlist.length;
+    return { track: playlist[index], index, position: 0 };
+  }
+
+  function preloadUpcoming(current) {
+    const upcoming = nextTrackFor(current);
+    if (!upcoming || preloadedTrackId === upcoming.track.id) return;
+    const preloadDeck = decks[(activeDeck + 1) % 2];
+    preloadedTrackId = upcoming.track.id;
+    const url = new URL(upcoming.track.url, window.location.href).href;
+    if (preloadDeck.src !== url) {
+      preloadDeck.src = upcoming.track.url;
+      preloadDeck.load();
+    }
+    if (upcoming.track.artwork) {
+      const image = new Image();
+      image.decoding = "async";
+      image.src = upcoming.track.artwork;
+    }
+  }
+
   function setArtwork(next) {
     const nextLayer = (artworkLayer + 1) % 2;
     const image = artworkLayers[nextLayer];
@@ -73,8 +98,11 @@
   }
 
   function prepareDeck(deck, next) {
-    deck.src = next.track.url;
-    deck.load();
+    const url = new URL(next.track.url, window.location.href).href;
+    if (deck.src !== url) {
+      deck.src = next.track.url;
+      deck.load();
+    }
     return new Promise((resolve) => {
       if (deck.readyState >= 1) { resolve(); return; }
       deck.addEventListener("loadedmetadata", resolve, { once: true });
@@ -99,11 +127,21 @@
         incoming.volume = Number(volume.value) * progress;
         outgoing.volume = Number(volume.value) * (1 - progress);
         if (progress < 1) requestAnimationFrame(fade);
-        else { outgoing.pause(); outgoing.removeAttribute("src"); outgoing.load(); }
+        else {
+          outgoing.pause();
+          outgoing.removeAttribute("src");
+          outgoing.load();
+          preloadedTrackId = "";
+          preloadUpcoming(next);
+        }
       };
       requestAnimationFrame(fade);
     }
     activeDeck = incomingIndex;
+    if (!(shouldPlay || !outgoing.paused)) {
+      preloadedTrackId = "";
+      preloadUpcoming(next);
+    }
   }
 
   function setTrack(next, shouldPlay = false) {
@@ -119,6 +157,7 @@
     if (station && station.index === next.index && activeAudio().src) return;
     const changingTrack = Boolean(station);
     station = next;
+    preloadUpcoming(next);
     trackInfo.classList.remove("is-transitioning");
     void trackInfo.offsetWidth;
     trackInfo.classList.add("is-transitioning");
@@ -195,6 +234,7 @@
   setInterval(() => {
     const next = stateAt();
     if (!next) return;
+    preloadUpcoming(next);
     if (!station || station.index !== next.index) synchronize(!activeAudio().paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
     if (!activeAudio().paused && activeAudio().readyState >= 3 && Math.abs(activeAudio().currentTime - next.position) > 4) {
