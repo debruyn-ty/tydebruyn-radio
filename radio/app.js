@@ -111,10 +111,14 @@
     revealVolume();
   });
   startOverlay.addEventListener("click", () => startAudio());
-  audio.addEventListener("play", () => player.classList.add("is-playing"));
+  audio.addEventListener("playing", () => player.classList.add("is-playing"));
   audio.addEventListener("pause", () => {
     player.classList.remove("is-playing");
     if (station) setTimeout(() => startAudio(), 250);
+  });
+  audio.addEventListener("ended", () => {
+    player.classList.remove("is-playing");
+    synchronize(true);
   });
   audio.addEventListener("error", () => {
     player.classList.remove("is-playing");
