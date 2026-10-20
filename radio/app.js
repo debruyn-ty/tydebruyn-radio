@@ -10,6 +10,7 @@
   const controls = document.querySelector(".controls");
   const volumeButton = document.querySelector("#volume-button");
   const volume = document.querySelector("#volume");
+  const player = document.querySelector(".player");
   let station = null;
   let volumeTimer = 0;
 
@@ -42,11 +43,13 @@
       artist.textContent = "Add tracks to radio/playlist.js";
       status.textContent = "The station is not configured with any music yet.";
       listen.hidden = true;
-      record.parentElement.classList.remove("playing");
+      player.classList.remove("is-playing");
       return;
     }
     if (station && station.index === next.index && audio.src) return;
     station = next;
+    listen.hidden = false;
+    status.textContent = "Tap to listen";
     title.textContent = next.track.title || "Untitled track";
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
     artwork.removeAttribute("src");
@@ -66,7 +69,7 @@
     try {
       audio.currentTime = expectedPosition();
       await audio.play();
-      record.parentElement.classList.add("playing");
+      player.classList.add("is-playing");
       listen.hidden = true;
       status.textContent = "";
     } catch (error) {
@@ -105,10 +108,12 @@
     revealVolume();
   });
   listen.addEventListener("click", () => synchronize(true));
-  audio.addEventListener("play", () => record.parentElement.classList.add("playing"));
-  audio.addEventListener("pause", () => record.parentElement.classList.remove("playing"));
+  audio.addEventListener("play", () => player.classList.add("is-playing"));
+  audio.addEventListener("pause", () => player.classList.remove("is-playing"));
   audio.addEventListener("error", () => {
-    status.textContent = "This track could not be loaded. Check its URL in playlist.js.";
+    player.classList.remove("is-playing");
+    listen.hidden = false;
+    status.textContent = "Audio could not be loaded. Check the MP3 file in the repository.";
   });
   document.addEventListener("visibilitychange", () => { if (!document.hidden) synchronize(!audio.paused); });
   setInterval(() => {
