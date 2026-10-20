@@ -12,6 +12,7 @@
     <section class="record-wrap" aria-label="Current track artwork">
       <div class="record" id="record" role="img" aria-label="Album artwork">
         <img id="artwork" alt="" decoding="async">
+        <img id="artwork-next" alt="" decoding="async">
         <span class="record-hole" aria-hidden="true"></span>
       </div>
     </section>
@@ -42,12 +43,13 @@
     </nav>
 
     <p id="status" class="status" role="status" aria-live="polite"></p>
-    <audio id="audio" preload="auto" autoplay></audio>
+    <audio id="audio-a" preload="auto" autoplay></audio>
+    <audio id="audio-b" preload="auto"></audio>
   </main>
   <button id="start-overlay" class="start-overlay" type="button" aria-label="Tap anywhere to start listening">
     <span>Tap Anywhere<br>To<br>Start Listening</span>
   </button>
   <script src="playlist.js"></script>
-  <script src="app.js?v=7" defer></script>
+  <script src="app.js?v=8" defer></script>
 </body>
 </html>

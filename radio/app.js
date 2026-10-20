@@ -1,7 +1,7 @@
 (() => {
-  const audio = document.querySelector("#audio");
+  const decks = [document.querySelector("#audio-a"), document.querySelector("#audio-b")];
   const record = document.querySelector("#record");
-  const artwork = document.querySelector("#artwork");
+  const artworkLayers = [document.querySelector("#artwork"), document.querySelector("#artwork-next")];
   const title = document.querySelector("#track-title");
   const artist = document.querySelector("#artist");
   const fill = document.querySelector("#progress-fill");
@@ -12,19 +12,23 @@
   const player = document.querySelector(".player");
   const startOverlay = document.querySelector("#start-overlay");
   let station = null;
+  let activeDeck = 0;
+  let artworkLayer = 0;
   let volumeTimer = 0;
   let rotation = 0;
   let lastFrame = performance.now();
+  let transitionId = 0;
 
   let storedVolume = NaN;
   try { storedVolume = Number.parseFloat(localStorage.getItem("tydebruyn-radio-volume")); } catch (error) { /* optional preference */ }
   if (Number.isFinite(storedVolume)) volume.value = String(Math.max(0, Math.min(1, storedVolume)));
-  audio.volume = Number(volume.value);
+  decks.forEach((deck) => { deck.volume = Number(volume.value); });
 
+  function activeAudio() { return decks[activeDeck]; }
   function animateRecord(timestamp) {
     const elapsed = Math.min(100, timestamp - lastFrame);
     lastFrame = timestamp;
-    if (!audio.paused && !audio.ended && !audio.error) {
+    if (!activeAudio().paused && !activeAudio().ended) {
       rotation = (rotation + elapsed * 0.03) % 360;
       record.style.transform = `rotate(${rotation}deg) translateZ(0)`;
     }
@@ -41,15 +45,65 @@
     let cursor = 0;
     for (let index = 0; index < playlist.length; index += 1) {
       const track = playlist[index];
-      if (elapsed < cursor + track.duration) {
-        return { track, index, position: elapsed - cursor };
-      }
+      if (elapsed < cursor + track.duration) return { track, index, position: elapsed - cursor };
       cursor += track.duration;
     }
     return { track: playlist[0], index: 0, position: 0 };
   }
 
-  function setTrack(next) {
+  function setArtwork(next) {
+    const nextLayer = (artworkLayer + 1) % 2;
+    const image = artworkLayers[nextLayer];
+    image.removeAttribute("src");
+    image.classList.remove("is-visible");
+    if (!next.track.artwork) {
+      artworkLayers[artworkLayer].classList.remove("is-visible");
+      artworkLayer = nextLayer;
+      return;
+    }
+    image.onload = () => {
+      image.classList.add("is-visible");
+      artworkLayers[artworkLayer].classList.remove("is-visible");
+      artworkLayer = nextLayer;
+    };
+    image.src = next.track.artwork;
+  }
+
+  function prepareDeck(deck, next) {
+    deck.src = next.track.url;
+    deck.load();
+    return new Promise((resolve) => {
+      if (deck.readyState >= 1) { resolve(); return; }
+      deck.addEventListener("loadedmetadata", resolve, { once: true });
+      deck.addEventListener("error", resolve, { once: true });
+    });
+  }
+
+  async function crossfade(next, shouldPlay) {
+    const id = ++transitionId;
+    const outgoing = activeAudio();
+    const incomingIndex = (activeDeck + 1) % 2;
+    const incoming = decks[incomingIndex];
+    await prepareDeck(incoming, next);
+    if (id !== transitionId) return;
+    incoming.currentTime = next.position;
+    incoming.volume = shouldPlay || !outgoing.paused ? 0 : Number(volume.value);
+    if (shouldPlay || !outgoing.paused) {
+      try { await incoming.play(); } catch (error) { return; }
+      const started = performance.now();
+      const fade = (timestamp) => {
+        const progress = Math.min(1, (timestamp - started) / 1200);
+        incoming.volume = Number(volume.value) * progress;
+        outgoing.volume = Number(volume.value) * (1 - progress);
+        if (progress < 1) requestAnimationFrame(fade);
+        else { outgoing.pause(); outgoing.removeAttribute("src"); outgoing.load(); }
+      };
+      requestAnimationFrame(fade);
+    }
+    activeDeck = incomingIndex;
+  }
+
+  function setTrack(next, shouldPlay = false) {
     if (!next) {
       station = null;
       title.textContent = "Ty deBruyn Radio";
@@ -59,16 +113,18 @@
       player.classList.remove("is-playing");
       return;
     }
-    if (station && station.index === next.index && audio.src) return;
+    if (station && station.index === next.index && activeAudio().src) return;
+    const changingTrack = Boolean(station);
     station = next;
     status.textContent = "";
     title.textContent = next.track.title || "Untitled track";
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
-    artwork.removeAttribute("src");
-    artwork.style.opacity = next.track.artwork ? ".82" : "0";
-    if (next.track.artwork) artwork.src = next.track.artwork;
-    audio.src = next.track.url;
-    audio.load();
+    setArtwork(next);
+    if (changingTrack) crossfade(next, shouldPlay);
+    else {
+      activeAudio().src = next.track.url;
+      activeAudio().load();
+    }
   }
 
   function expectedPosition() {
@@ -78,6 +134,7 @@
   }
 
   async function startAudio() {
+    const audio = activeAudio();
     try {
       audio.currentTime = expectedPosition();
       await audio.play();
@@ -91,12 +148,13 @@
 
   function synchronize(shouldPlay = false) {
     const next = stateAt();
-    setTrack(next);
+    const changingTrack = Boolean(station && next && station.index !== next.index);
+    setTrack(next, shouldPlay);
     if (!next) return;
+    if (changingTrack) return;
+    const audio = activeAudio();
     const position = next.position;
-    const correct = () => {
-      if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
-    };
+    const correct = () => { if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position; };
     if (audio.readyState >= 1) correct();
     else audio.addEventListener("loadedmetadata", correct, { once: true });
     if (shouldPlay || !audio.paused) startAudio();
@@ -113,37 +171,26 @@
   }
 
   volumeButton.addEventListener("click", revealVolume);
-  volumeButton.addEventListener("pointerdown", () => startAudio());
-  volume.addEventListener("pointerdown", () => {
-    revealVolume();
-    startAudio();
-  });
+  volumeButton.addEventListener("pointerdown", startAudio);
+  volume.addEventListener("pointerdown", () => { revealVolume(); startAudio(); });
   volume.addEventListener("input", () => {
-    audio.volume = Number(volume.value);
+    decks.forEach((deck) => { deck.volume = Number(volume.value); });
     try { localStorage.setItem("tydebruyn-radio-volume", volume.value); } catch (error) { /* optional preference */ }
     revealVolume();
   });
-  startOverlay.addEventListener("click", () => startAudio());
-  audio.addEventListener("playing", () => player.classList.add("is-playing"));
-  audio.addEventListener("pause", () => {
-    player.classList.remove("is-playing");
-    if (station) setTimeout(() => startAudio(), 250);
+  startOverlay.addEventListener("click", startAudio);
+  decks.forEach((deck) => {
+    deck.addEventListener("playing", () => player.classList.add("is-playing"));
+    deck.addEventListener("pause", () => { if (deck === activeAudio()) player.classList.remove("is-playing"); });
+    deck.addEventListener("error", () => { if (deck === activeAudio()) status.textContent = "Audio could not be loaded."; });
   });
-  audio.addEventListener("ended", () => {
-    player.classList.remove("is-playing");
-    synchronize(true);
-  });
-  audio.addEventListener("error", () => {
-    player.classList.remove("is-playing");
-    status.textContent = "Audio could not be loaded. Check the MP3 file in the repository.";
-  });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) synchronize(!audio.paused); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) synchronize(!activeAudio().paused); });
   setInterval(() => {
     const next = stateAt();
     if (!next) return;
-    if (!station || station.index !== next.index) synchronize(!audio.paused);
+    if (!station || station.index !== next.index) synchronize(!activeAudio().paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
-    if (!audio.paused && Math.abs(audio.currentTime - next.position) > 2) audio.currentTime = next.position;
+    if (!activeAudio().paused && Math.abs(activeAudio().currentTime - next.position) > 2) activeAudio().currentTime = next.position;
   }, 250);
 
   synchronize(true);
