@@ -22,6 +22,7 @@
   let preloadedTrackId = "";
   let transitioning = false;
   let clockOffset = 0;
+  let artworkRequestId = 0;
   const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
 
   let storedVolume = NaN;
@@ -82,6 +83,7 @@
   }
 
   function setArtwork(next) {
+    const requestId = ++artworkRequestId;
     const nextLayer = (artworkLayer + 1) % 2;
     const image = artworkLayers[nextLayer];
     image.removeAttribute("src");
@@ -89,15 +91,26 @@
     const fallback = fallbackArtwork[next.index % fallbackArtwork.length];
     const artworkUrl = next.track.artwork || fallback;
     image.onload = () => {
+      if (requestId !== artworkRequestId) return;
       image.classList.add("is-visible");
       artworkLayers[artworkLayer].classList.remove("is-visible");
       artworkLayer = nextLayer;
     };
     image.onerror = () => {
+      if (requestId !== artworkRequestId) return;
       image.onerror = null;
       image.src = fallback;
     };
     image.src = artworkUrl;
+  }
+
+  function renderTrack(next) {
+    trackInfo.classList.remove("is-transitioning");
+    void trackInfo.offsetWidth;
+    trackInfo.classList.add("is-transitioning");
+    title.textContent = next.track.title || "Untitled track";
+    artist.textContent = next.track.artist || "Ty deBruyn Radio";
+    setArtwork(next);
   }
 
   function prepareDeck(deck, next) {
@@ -131,6 +144,8 @@
       }
       activeDeck = incomingIndex;
       player.classList.add("is-playing");
+      station = next;
+      renderTrack(next);
         incoming.volume = Number(volume.value);
         outgoing.pause();
         outgoing.volume = Number(volume.value);
@@ -142,6 +157,8 @@
     }
     activeDeck = incomingIndex;
     if (!(shouldPlay || !outgoing.paused)) {
+      station = next;
+      renderTrack(next);
       preloadedTrackId = "";
       transitioning = false;
       preloadUpcoming(next);
@@ -160,16 +177,13 @@
     }
     if (station && station.index === next.index && activeAudio().src) return;
     const changingTrack = Boolean(station);
-    station = next;
-    trackInfo.classList.remove("is-transitioning");
-    void trackInfo.offsetWidth;
-    trackInfo.classList.add("is-transitioning");
+    if (transitioning) return;
     status.textContent = "";
-    title.textContent = next.track.title || "Untitled track";
-    artist.textContent = next.track.artist || "Ty deBruyn Radio";
-    setArtwork(next);
     if (changingTrack) crossfade(next, shouldPlay);
     else {
+      station = next;
+      renderTrack(next);
+      setArtwork(next);
       activeAudio().src = next.track.url;
       activeAudio().load();
       preloadUpcoming(next);
