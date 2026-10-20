@@ -6,12 +6,12 @@ body { color: var(--ink); font-family: Arial, Helvetica, sans-serif; overflow-x:
 .record-wrap { display: grid; place-items: center; min-height: 0; }
 .record { width: min(64vw, 430px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; position: relative; background: radial-gradient(circle at 50% 50%, #444 0 1%, #111 1.2% 2%, #292929 2.2% 4%, #151515 4.5% 100%); box-shadow: 0 1px 0 #ddd; transform: translateZ(0); }
 .record::before { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 10px, rgba(255,255,255,.11) 10.5px 11px, transparent 11.5px 18px); opacity: .65; pointer-events: none; }
-.record img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity .9s ease; }
+.record img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 2.5s ease; }
 .record img.is-visible { opacity: .82; }
 .record img:not([src]) { opacity: 0; }
 .record-hole { position: absolute; z-index: 2; inset: 47.5%; border-radius: 50%; background: #fff; }
 .track-info { width: min(100%, 760px); margin: clamp(1.5rem, 5vh, 4rem) auto 0; }
-.track-info.is-transitioning { animation: track-info-in .7s ease both; }
+.track-info.is-transitioning { animation: track-info-in 2.5s ease both; }
 @keyframes track-info-in { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .now-playing { color: #929292; font-size: .7rem; font-weight: 700; letter-spacing: .08em; margin: 0 0 .65rem; }
 .now-playing span { color: #aaa; }
