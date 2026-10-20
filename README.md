@@ -1,103 +1,81 @@
 # Ty deBruyn Radio
 
-Framework-free, mobile-first web radio with a PHP-controlled shared timeline. The browser has a local `HTMLAudioElement`, but track selection and position are derived from `api/radio-state.php`, so pausing or changing volume affects only that listener.
+Minimal, framework-free web radio designed for free GitHub Pages hosting. It uses a shared deterministic clock instead of PHP: every browser calculates the current track from the same UTC epoch, playlist order, and track durations.
 
-## Free option: GitHub Pages
+## How synchronization works
 
-You do **not** need to buy anything under Namecheap **Hosting List** if you only want to use your already-registered domain.
+`radio/playlist.js` contains one shared `RADIO_EPOCH_MS` and the ordered playlist. Each browser calculates:
 
-GitHub Pages is free and can host the HTML, CSS, JavaScript, artwork, and MP3 files. However, GitHub Pages cannot run PHP. Publishing this current project directly with GitHub Pages would make the player UI load but would break the shared radio API and true synchronized playback.
+```text
+elapsed = (current UTC time - epoch) modulo total playlist duration
+```
 
-There are therefore two choices:
+It then selects the corresponding track and seeks to the corresponding offset. A visitor joining late therefore joins the same scheduled track rather than starting at the beginning.
 
-1. **Free GitHub Pages version:** static website, with no PHP backend. This is suitable for a personal player but cannot guarantee that every visitor hears the same track and position.
-2. **Full synchronized radio:** requires a PHP-capable host such as Namecheap hosting, or a separate free backend service such as Cloudflare Workers/Firebase. This preserves the shared timeline.
+This is close synchronization, not a broadcast stream. Differences in device clocks, buffering, network speed, and audio decoding can create small offsets. The player corrects drift periodically. Local pause and volume changes affect only that visitor.
 
-Do not purchase Namecheap hosting unless you specifically want the full PHP version. The domain can remain registered at Namecheap while the website is hosted elsewhere.
+## Add music
 
-### Publish the current static files on GitHub Pages
+Drop an MP3 into [mp3s/](mp3s/), then commit and push it:
 
-1. Create a GitHub repository, for example `$env:Path += ";C:\Program Files\Git\cmd"
-git --version`.
-2. Push this project using the Git commands below.
-3. In GitHub, open **Settings → Pages**.
-4. Under **Build and deployment**, select **Deploy from a branch**, choose `main`, choose `/ (root)`, and save.
-5. GitHub will provide a temporary address such as `https://YOUR-USERNAME.github.io/tydebruyn-radio/`.
+```powershell
+Copy-Item "C:\path\to\new-song.mp3" "mp3s\"
+git add mp3s
+git commit -m "Add new track"
+git push
+```
 
-The current PHP player API will not work at that address. The frontend must first be converted to a static playlist/timeline implementation, and MP3 files must comply with GitHub's file-size limits. I can make that conversion, but it intentionally gives up authoritative cross-visitor synchronization.
+The GitHub Actions workflow automatically reads the MP3's ID3 metadata, including title, artist, duration, and embedded cover art. It regenerates [radio/playlist.js](radio/playlist.js) and commits the generated artwork. GitHub Pages then publishes the updated station. Do not edit `radio/playlist.js` manually.
 
-### Connect `tydebruyn.me` to GitHub Pages
+For local generation, install the metadata reader once and run:
 
-In the repository, add a file named `CNAME` containing exactly:
+```powershell
+python -m pip install mutagen
+python scripts\generate_playlist.py
+```
+
+If a track has no artwork, the player uses its neutral vinyl fallback. GitHub has file-size limits, so use short compressed MP3s or host larger audio files from a suitable static asset host.
+
+Change the epoch only when you intentionally want to restart the shared schedule. Keep the same epoch and playlist on all visitors. Adding or removing tracks changes the schedule for everyone; the workflow preserves the existing epoch.
+
+## GitHub Pages deployment
+
+GitHub Pages is free and does not require Namecheap Hosting. Namecheap is only used for the domain and DNS.
+
+1. Push the project to GitHub.
+2. Open the repository's **Settings → Pages**.
+3. Select **Deploy from a branch**, branch `main`, folder `/ (root)`, then save.
+4. Add a repository-root file named `CNAME` containing:
 
 ```text
 tydebruyn.me
 ```
 
-In Namecheap, open **Domain List → Manage → Advanced DNS**—not **Hosting List**—and add:
+5. In Namecheap, open **Domain List → Manage → Advanced DNS**, not **Hosting List**.
+6. Add the GitHub Pages DNS records shown in GitHub's custom-domain instructions. Commonly this is a `CNAME` for `www` pointing to `debruyn-ty.github.io` and GitHub Pages `A` records for the root `@` domain.
+7. Return to **Settings → Pages**, enter `tydebruyn.me` as the custom domain, and enable HTTPS after DNS propagates.
 
-- `A` records for `@` pointing to GitHub Pages' current IPv4 addresses shown in GitHub's Pages documentation.
-- A `CNAME` record for `www` pointing to `YOUR-USERNAME.github.io`.
+DNS changes can take several hours.
 
-Then return to GitHub **Settings → Pages**, enter `tydebruyn.me` as the custom domain, and enable HTTPS after DNS finishes propagating. DNS changes may take several hours.
+## Files
 
-## Full synchronized deployment with paid hosting
+- `radio/index.html` — player markup.
+- `radio/styles.css` — responsive visual design.
+- `radio/app.js` — audio playback and synchronization.
+- `radio/playlist.js` — generated shared epoch and track list.
+- `mp3s/` — MP3 storage; add tracks here.
+- `scripts/generate_playlist.py` — ID3 metadata and artwork generator.
+- `.github/workflows/generate-playlist.yml` — automatic metadata generation on push.
+- `radio/assets/artwork/` — generated artwork storage.
 
-Use GitHub as the free source-code repository and Namecheap shared hosting as the web server. This is only needed for the PHP-controlled shared timeline. Namecheap DNS can point `tydebruyn.me` to that hosting account.
+The old `api/`, `scripts/metadata.php`, and `private/` files are retained as optional PHP deployment references, but GitHub Pages does not execute them and the static player does not request them.
 
-The root `index.html` redirects `https://tydebruyn.me/` to `https://tydebruyn.me/radio/`.
+## Test locally
 
-## Structure
+From the project root, start any static server. If Python is installed:
 
-- `radio/` — the public player.
-- `api/` — read-only JSON endpoints.
-- `audio/` — upload approved `.mp3` files here.
-- `scripts/metadata.php` — validates files and extracts basic ID3 metadata.
-- `private/` — writable state/cache directory; deny public access.
-
-## Namecheap deployment
-
-1. In Namecheap, open **Hosting List → Manage → cPanel** and confirm the account has PHP 8.0 or newer. Enable HTTPS with the available SSL option.
-2. In cPanel, open **File Manager → public_html**. Upload the project contents so these paths exist:
-   - `public_html/index.html`
-   - `public_html/radio/index.html`
-   - `public_html/api/radio-state.php`
-   - `public_html/audio/`
-3. Upload MP3 files into `public_html/audio/`. Keep filenames simple (letters, numbers, spaces, hyphens, and underscores).
-4. Make `public_html/private/` writable by the PHP process, usually permission `750` or `755`, but never make it world-readable. The included `.htaccess` denies web access.
-5. For stronger isolation, create a directory outside `public_html` (for example the cPanel account home directory), move `private/` there, and change `RADIO_PRIVATE_DIR` in `api/config.php` to its absolute server path.
-6. In cPanel **MultiPHP Manager**, select PHP 8.0+ for the domain. The application uses standard PHP filesystem functions and does not need a database.
-7. Visit `https://tydebruyn.me/radio/` and click **Tap to listen**. The first API request creates the shared state and artwork cache.
-
-### Namecheap DNS
-
-If the domain and hosting are in the same Namecheap account, use **Domain List → Manage → Advanced DNS** and follow the hosting account's cPanel connection instructions. Typically the domain uses the Namecheap hosting nameservers, or an `A` record points at the hosting server IP. Do not add GitHub Pages `A` records for this PHP deployment. DNS and SSL changes can take several hours to propagate.
-
-### GitHub repository
-
-Create a private or public repository on GitHub, then from this folder run:
-
-```text
-git init
-git add .
-git commit -m "Initial Ty deBruyn Radio"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/tydebruyn-radio.git
-git push -u origin main
+```powershell
+python -m http.server 8080
 ```
 
-Do not commit MP3 files, generated artwork, or private state. The included `.gitignore` excludes them. Use cPanel/File Manager or SFTP to upload those production-only files.
-
-## Local verification
-
-Use PHP 8.0+ with `fileinfo`/standard filesystem functions enabled and Apache (or an equivalent web server). Upload this directory so `/radio/` contains `radio/index.html`; keep `private/` outside the public document root in production by changing `RADIO_PRIVATE_DIR` in `api/config.php` to an absolute writable directory. Ensure `audio/` and `radio/assets/artwork/` are readable, and `private/` is writable by PHP.
-
-Place MP3 files in `audio/`. The first request to `api/radio-state.php` indexes valid files. The index is deterministic for the current collection and is shuffled once into a persistent state file. Adding/removing files creates a new sequence; existing state is not changed by any visitor action.
-
-The current implementation reads ID3v2 text tags and extracts the first embedded APIC image into the artwork cache. Duration uses a conservative MP3 bitrate fallback; for accurate VBR timing, run an indexing step with `ffprobe` in production and store the resulting duration in the metadata cache, or replace `parse_mp3()` with the host's approved ID3 parser. No audio files or filesystem paths are exposed by the API.
-
-## Testing
-
-Run `php -l api/config.php`, `php -l api/radio-state.php`, `php -l api/radio-config.php`, and `php -l scripts/metadata.php`. Start a local PHP server with `php -S localhost:8080` from the project root, open `http://localhost:8080/radio/` in two browser windows, and compare the displayed track and progress after starting playback in each. Browser autoplay policies require a click in each window.
-
-With no MP3s, the player remains usable and the API returns a clear empty-station response. Production validation still requires real MP3s, correct web-server permissions, and testing on the target hosting provider.
+Open `http://localhost:8080/radio/` in two browser windows, click **Tap to listen** in each, and verify that both show the same track and progress. Do not open the HTML with a `file://` URL because browsers restrict local module/assets behavior.
