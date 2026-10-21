@@ -5,6 +5,38 @@
 window.RADIO_EPOCH_MS = Date.parse("2026-10-20T00:00:00Z");
 window.RADIO_PLAYLIST = [
   {
+    "id": "683947a93db415e1",
+    "title": "29th Ave.",
+    "artist": "Ty deBruyn",
+    "duration": 144.692,
+    "url": "../mp3s/29th%20Ave..mp3",
+    "artwork": "assets/artwork/683947a93db415e1.png"
+  },
+  {
+    "id": "3cecd88ead7ee98a",
+    "title": "Acceptance",
+    "artist": "Ty deBruyn",
+    "duration": 303.203,
+    "url": "../mp3s/Acceptance.mp3",
+    "artwork": "assets/artwork/3cecd88ead7ee98a.png"
+  },
+  {
+    "id": "93e0b2c13a2c7742",
+    "title": "Adjustments",
+    "artist": "Ty deBruyn",
+    "duration": 259.239,
+    "url": "../mp3s/Adjustments.mp3",
+    "artwork": "assets/artwork/93e0b2c13a2c7742.png"
+  },
+  {
+    "id": "1113d01af2c01e98",
+    "title": "Asunder",
+    "artist": "Ty deBruyn",
+    "duration": 197.303,
+    "url": "../mp3s/Asunder.mp3",
+    "artwork": "assets/artwork/1113d01af2c01e98.png"
+  },
+  {
     "id": "0c5872fc84ac9136",
     "title": "ADRENALINE",
     "artist": "Ty deBruyn",
