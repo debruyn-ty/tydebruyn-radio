@@ -37,6 +37,30 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/1113d01af2c01e98.png"
   },
   {
+    "id": "6f2f025db15de7a1",
+    "title": "Forgiveness",
+    "artist": "Ty deBruyn Radio",
+    "duration": 220.944,
+    "url": "../mp3s/Forgiveness.mp3",
+    "artwork": null
+  },
+  {
+    "id": "8f6674b5a5e96921",
+    "title": "Low Effort",
+    "artist": "Ty deBruyn Radio",
+    "duration": 174.237,
+    "url": "../mp3s/Low%20Effort.mp3",
+    "artwork": null
+  },
+  {
+    "id": "81107817f040636a",
+    "title": "Round Here - Copy",
+    "artist": "Ty deBruyn Radio",
+    "duration": 236.617,
+    "url": "../mp3s/Round%20Here%20-%20Copy.mp3",
+    "artwork": null
+  },
+  {
     "id": "0c5872fc84ac9136",
     "title": "ADRENALINE",
     "artist": "Ty deBruyn",
