@@ -12,7 +12,7 @@ elapsed = (current UTC time - epoch) modulo total playlist duration
 
 It then selects the corresponding track and seeks to the corresponding offset. A visitor joining late therefore joins the same scheduled track rather than starting at the beginning.
 
-This is close synchronization, not a broadcast stream. Differences in device clocks, buffering, network speed, and audio decoding can create small offsets. The player corrects drift periodically. Local pause and volume changes affect only that visitor.
+This is close synchronization, not a broadcast stream. Differences in device clocks, buffering, network speed, and audio decoding can create small offsets. The player corrects drift periodically. Local pauses affect only that visitor.
 
 The player estimates the hosting server's clock from the `Date` response header so devices with different system clocks select the same track. Track changes use the next deck's preloaded audio and preserve each MP3's own fade-out instead of applying a second audio gain ramp; the visual artwork transition remains gradual.
 

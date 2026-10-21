@@ -6,30 +6,32 @@
   const artist = document.querySelector("#artist");
   const trackInfo = document.querySelector("#track-info");
   const fill = document.querySelector("#progress-fill");
+  const upNext = document.querySelector("#up-next");
   const status = document.querySelector("#status");
-  const controls = document.querySelector(".controls");
-  const volumeButton = document.querySelector("#volume-button");
-  const volume = document.querySelector("#volume");
   const player = document.querySelector(".player");
   const startOverlay = document.querySelector("#start-overlay");
+  const startOverlayText = startOverlay.querySelector("span");
+  const tapeStop = new Audio("assets/tapestop.mp3");
   const playlist = window.RADIO_PLAYLIST || [];
   const fallbackArtwork = ["assets/placeholders/1.png", "assets/placeholders/2.png", "assets/placeholders/3.png"];
   let station = null;
   let artworkLayer = 0;
   let artworkRequestId = 0;
-  let volumeTimer = 0;
   let rotation = 0;
   let lastFrame = performance.now();
   let clockOffset = 0;
   let transitionId = 0;
   let transitionPending = false;
   let endedNextIndex = -1;
+  let playbackStopped = false;
+  let playbackGeneration = 0;
+  let audioContext = null;
+  let analyser = null;
+  let frequencyData = null;
+  let audioLevel = 0;
 
   audio.autoplay = false;
-  let storedVolume = NaN;
-  try { storedVolume = Number.parseFloat(localStorage.getItem("tydebruyn-radio-volume")); } catch (error) { /* optional preference */ }
-  if (Number.isFinite(storedVolume)) volume.value = String(Math.max(0, Math.min(1, storedVolume)));
-  audio.volume = Number(volume.value);
+  tapeStop.preload = "auto";
 
   function animateRecord(timestamp) {
     const elapsed = Math.min(100, timestamp - lastFrame);
@@ -38,9 +40,34 @@
       rotation = (rotation + elapsed * 0.03) % 360;
       record.style.transform = `rotate(${rotation}deg) translateZ(0)`;
     }
+    if (analyser && frequencyData) {
+      analyser.getByteFrequencyData(frequencyData);
+      const startBin = 1;
+      const sampleSize = Math.min(12, frequencyData.length - startBin);
+      let total = 0;
+      for (let index = startBin; index < startBin + sampleSize; index += 1) total += frequencyData[index];
+      const targetLevel = total / sampleSize / 255;
+      audioLevel += (targetLevel - audioLevel) * (targetLevel > audioLevel ? .32 : .16);
+      document.documentElement.style.setProperty("--audio-glow", `${4 + audioLevel * 50}px`);
+      document.documentElement.style.setProperty("--audio-opacity", `${12 + audioLevel * 68}%`);
+    }
     requestAnimationFrame(animateRecord);
   }
   requestAnimationFrame(animateRecord);
+
+  async function setupAudioAnalyser() {
+    if (!audioContext) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      audioContext = new AudioContext();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      frequencyData = new Uint8Array(analyser.frequencyBinCount);
+      audioContext.createMediaElementSource(audio).connect(analyser);
+      analyser.connect(audioContext.destination);
+    }
+    if (audioContext.state === "suspended") await audioContext.resume();
+  }
 
   function stateAt(time = Date.now()) {
     const total = playlist.reduce((sum, track) => sum + track.duration, 0);
@@ -81,6 +108,8 @@
     trackInfo.classList.add("is-transitioning");
     title.textContent = next.track.title || "Untitled track";
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
+    const nextTrack = playlist[(next.index + 1) % playlist.length];
+    upNext.textContent = nextTrack ? `UP NEXT: ${nextTrack.title || "Untitled track"}` : "UP NEXT: None";
     setArtwork(next);
   }
 
@@ -112,12 +141,11 @@
       audio.load();
     }
     const ready = await waitForAudioReady(id);
+    if (id !== transitionId) return;
     if (!ready) {
-      if (id === transitionId) {
-        transitionPending = false;
-        player.classList.remove("is-playing");
-        status.textContent = "Audio could not be loaded.";
-      }
+      transitionPending = false;
+      player.classList.remove("is-playing");
+      status.textContent = "Audio could not be loaded.";
       return;
     }
     const current = stateAt();
@@ -143,6 +171,7 @@
       transitionPending = false;
     } catch (error) {
       transitionPending = false;
+      if (id !== transitionId) return;
       player.classList.remove("is-playing");
       status.textContent = "Playback is blocked until the browser allows audio.";
     }
@@ -155,6 +184,7 @@
       audio.removeAttribute("src");
       title.textContent = "Ty deBruyn Radio";
       artist.textContent = "Add tracks to radio/playlist.js";
+      upNext.textContent = "UP NEXT: None";
       status.textContent = "The station is not configured with any music yet.";
       startOverlay.classList.add("is-hidden");
       player.classList.remove("is-playing");
@@ -172,23 +202,69 @@
 
   async function startAudio() {
     if (transitionPending) return;
+    const generation = ++playbackGeneration;
+    playbackStopped = false;
     try {
-      const position = expectedPosition();
-      if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
+      await setupAudioAnalyser();
+      if (generation !== playbackGeneration || playbackStopped) return;
+      const current = stateAt();
+      if (!current) return;
+      if (!station || station.index !== current.index || !audio.src) {
+        synchronize(true);
+        return;
+      }
+      const position = current.position;
+      if (audio.ended || Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
       await audio.play();
+      if (generation !== playbackGeneration || playbackStopped) {
+        audio.pause();
+        return;
+      }
       player.classList.add("is-playing");
       startOverlay.classList.add("is-hidden");
       status.textContent = "";
     } catch (error) {
+      if (generation !== playbackGeneration || playbackStopped) return;
       status.textContent = "Playback is blocked until the browser allows audio.";
     }
   }
 
+  function showStartOverlay() {
+    startOverlay.classList.remove("is-hidden");
+    startOverlayText.classList.remove("is-entering");
+    void startOverlayText.offsetWidth;
+    startOverlayText.classList.add("is-entering");
+  }
+
+  async function stopPlayback() {
+    playbackGeneration += 1;
+    transitionId += 1;
+    transitionPending = false;
+    playbackStopped = true;
+    endedNextIndex = -1;
+    audio.pause();
+    player.classList.remove("is-playing");
+    showStartOverlay();
+    status.textContent = "";
+    tapeStop.currentTime = 0;
+    try {
+      await tapeStop.play();
+    } catch (error) {
+      status.textContent = "Tape-stop sound could not be played.";
+    }
+  }
+
   function synchronize(shouldPlay = false) {
+    if (playbackStopped && shouldPlay) return;
     const next = stateAt();
     if (!next) {
       setTrack(null);
       return;
+    }
+    if (endedNextIndex >= 0) {
+      if (next.index !== endedNextIndex) return;
+      endedNextIndex = -1;
+      shouldPlay = true;
     }
     const changingTrack = Boolean(station && station.index !== next.index);
     setTrack(next, shouldPlay);
@@ -211,28 +287,12 @@
     }
   }
 
-  function revealVolume() {
-    controls.classList.add("volume-open");
-    volumeButton.setAttribute("aria-expanded", "true");
-    clearTimeout(volumeTimer);
-    volumeTimer = setTimeout(() => {
-      controls.classList.remove("volume-open");
-      volumeButton.setAttribute("aria-expanded", "false");
-    }, 2600);
-  }
-
-  volumeButton.addEventListener("click", revealVolume);
-  volumeButton.addEventListener("pointerdown", startAudio);
-  volume.addEventListener("pointerdown", () => { revealVolume(); startAudio(); });
-  volume.addEventListener("input", () => {
-    audio.volume = Number(volume.value);
-    try { localStorage.setItem("tydebruyn-radio-volume", volume.value); } catch (error) { /* optional preference */ }
-    revealVolume();
-  });
   startOverlay.addEventListener("click", startAudio);
+  record.addEventListener("click", stopPlayback);
   audio.addEventListener("playing", () => player.classList.add("is-playing"));
   audio.addEventListener("pause", () => player.classList.remove("is-playing"));
   audio.addEventListener("ended", () => {
+    if (playbackStopped) return;
     const current = stateAt();
     if (station && current && current.index === station.index && playlist.length > 1) {
       endedNextIndex = (station.index + 1) % playlist.length;
@@ -252,8 +312,8 @@
     if (!next) return;
     if (endedNextIndex >= 0) {
       if (next.index !== endedNextIndex) return;
-      endedNextIndex = -1;
       synchronize(true);
+      return;
     }
     if (!station || station.index !== next.index) synchronize(!audio.paused);
     fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
@@ -262,6 +322,6 @@
     }
   }, 250);
 
-  synchronizeClock().then(() => synchronize(true));
+  synchronizeClock().then(() => synchronize(false));
   setInterval(() => synchronizeClock().then(() => synchronize(!audio.paused)), 30000);
 })();
