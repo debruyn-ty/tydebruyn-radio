@@ -2,11 +2,12 @@
 @font-face { font-family: "Boldonse"; src: url("../Boldonse-Regular.ttf") format("truetype"); font-display: swap; }
 * { box-sizing: border-box; }
 html, body { margin: 0; min-width: 320px; min-height: 100%; background: #fff; }
-body { color: var(--ink); font-family: "Boldonse", Arial, sans-serif; font-weight: 700; overflow-x: hidden; }
-.player { min-height: 100svh; padding: max(2.5rem, env(safe-area-inset-top) + 1rem) max(1.5rem, 6vw) max(2.5rem, env(safe-area-inset-bottom) + 1rem); display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto; align-items: center; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { color: var(--ink); font-family: "Boldonse", Arial, sans-serif; font-weight: 700; overflow-x: hidden; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+.player { min-height: 100vh; min-height: 100svh; min-height: 100dvh; padding: max(2.5rem, env(safe-area-inset-top) + 1rem) max(1.5rem, 6vw) max(2.5rem, env(safe-area-inset-bottom) + 1rem); display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto; align-items: center; }
 .record-wrap { width: min(64vw, 430px); max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; justify-self: center; min-height: 0; position: relative; }
 .record-wrap::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 50%; box-shadow: 0 0 var(--audio-glow, 8px) rgb(220 38 38 / var(--audio-opacity, 45%)); pointer-events: none; }
-.record { width: 100%; height: 100%; z-index: 1; border-radius: 50%; overflow: hidden; position: relative; background: radial-gradient(circle at 50% 50%, #444 0 1%, #111 1.2% 2%, #292929 2.2% 4%, #151515 4.5% 100%); box-shadow: 0 12px 24px rgb(0 0 0 / 22%); transform: translateZ(0); cursor: pointer; }
+.record { width: 100%; height: 100%; z-index: 1; border-radius: 50%; overflow: hidden; position: relative; background: radial-gradient(circle at 50% 50%, #444 0 1%, #111 1.2% 2%, #292929 2.2% 4%, #151515 4.5% 100%); box-shadow: 0 12px 24px rgb(0 0 0 / 22%); transform: translateZ(0); cursor: pointer; touch-action: manipulation; }
 .record::before { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 10px, rgba(255,255,255,.11) 10.5px 11px, transparent 11.5px 18px); opacity: .65; pointer-events: none; }
 .record img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 2.5s ease; }
 .record img.is-visible { opacity: .82; }
@@ -27,7 +28,7 @@ h1 { --title-size: clamp(2.1rem, 9vw, 6.5rem); width: 100%; max-width: 100%; min
 #artist { font-family: inherit; font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 700; letter-spacing: -.065em; text-align: left; text-transform: uppercase; margin: .45rem 0 0; }
 .status { min-height: 1.2em; color: var(--muted); font-size: .82rem; text-align: center; margin: 1rem 0 0; }
 .social-links { width: min(100%, 760px); display: flex; flex-wrap: nowrap; gap: clamp(.2rem, 1.2vw, .5rem); margin: 1rem auto 0; }
-.social-link { min-width: 0; min-height: 2.1rem; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; padding: .35rem clamp(.8rem, 2vw, 1.2rem); border: 2px solid var(--ink); background: var(--ink); color: #fff; font-size: clamp(.52rem, 1.5vw, .78rem); font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; transition: background-color .2s ease, color .2s ease; }
+.social-link { min-width: 0; min-height: 2.1rem; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; padding: .35rem clamp(.8rem, 2vw, 1.2rem); border: 2px solid var(--ink); background: var(--ink); color: #fff; font-size: clamp(.52rem, 1.5vw, .78rem); font-weight: 700; letter-spacing: .04em; text-decoration: none; text-transform: uppercase; touch-action: manipulation; transition: background-color .2s ease, color .2s ease; }
 .social-link:hover, .social-link:focus-visible { background: #fff; color: var(--ink); text-decoration: none; }
 .start-overlay { position: fixed; z-index: 10; inset: 0; width: 100%; height: 100%; border: 0; padding: max(2rem, env(safe-area-inset-top)) max(1.5rem, 6vw) max(2rem, env(safe-area-inset-bottom)); display: grid; place-items: center; background: rgba(145, 137, 137, .72); color: #fff; cursor: pointer; text-align: left; }
 .start-overlay span { width: min(100%, 680px); max-width: 100%; font-size: clamp(2.5rem, min(12vw, 14vh), 9rem); font-weight: 800; line-height: .9; letter-spacing: -.08em; text-wrap: balance; }
