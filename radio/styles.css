@@ -1,9 +1,9 @@
 :root { color-scheme: light; --ink: #111; --muted: #6c6c6c; }
 @font-face { font-family: "Boldonse"; src: url("../Boldonse-Regular.ttf") format("truetype"); font-display: swap; }
 * { box-sizing: border-box; }
-html, body { margin: 0; min-width: 320px; min-height: 100%; background: #fff; }
+html, body { width: 100%; height: 100%; margin: 0; min-width: 320px; min-height: 100%; overflow: hidden; background: #fff; }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-body { color: var(--ink); font-family: "Boldonse", Arial, sans-serif; font-weight: 700; overflow-x: hidden; overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; }
+body { color: var(--ink); font-family: "Boldonse", Arial, sans-serif; font-weight: 700; overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
 .player { min-height: 100vh; min-height: 100svh; min-height: 100dvh; padding: max(2.5rem, env(safe-area-inset-top) + 1rem) max(1.5rem, 6vw) max(2.5rem, env(safe-area-inset-bottom) + 1rem); display: grid; grid-template-rows: minmax(0, 1fr) auto auto auto; align-items: center; }
 .record-wrap { width: min(64vw, 430px); max-width: 100%; aspect-ratio: 1; display: grid; place-items: center; justify-self: center; min-height: 0; position: relative; }
 .record-wrap::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 50%; box-shadow: 0 0 var(--audio-glow, 8px) rgb(220 38 38 / var(--audio-opacity, 45%)); pointer-events: none; }
@@ -37,7 +37,7 @@ h1 { --title-size: clamp(2.1rem, 9vw, 6.5rem); width: 100%; max-width: 100%; min
 @keyframes start-text-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .start-overlay.is-hidden { display: none; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-@media (orientation: landscape) and (max-height: 600px) { .player { grid-template-columns: 40% 60%; grid-template-rows: 1fr auto auto; gap: 0 2rem; } .record-wrap { width: min(38vw, 300px); } .track-info { margin: 0; } .social-links { grid-column: 2; } .status { grid-column: 1 / -1; } }
+@media (orientation: landscape) and (max-height: 600px) { .player { height: 100dvh; min-height: 0; padding: max(.75rem, env(safe-area-inset-top)) max(1rem, 4vw) max(.75rem, env(safe-area-inset-bottom)); grid-template-columns: 40% 60%; grid-template-rows: minmax(0, 1fr) auto auto; gap: 0 1.5rem; } .record-wrap { width: min(30vw, 220px); } .track-info { margin: 0; } .social-links { grid-column: 2; margin-top: .5rem; } .status { grid-column: 1 / -1; } }
 @media (max-width: 699px) {
   .player { padding: max(1.25rem, env(safe-area-inset-top) + .75rem) max(1rem, 5vw) max(1.25rem, env(safe-area-inset-bottom) + .75rem); }
   .record-wrap { width: min(76vw, 320px); }
