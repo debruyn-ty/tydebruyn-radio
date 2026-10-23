@@ -2,7 +2,9 @@
   const audio = document.querySelector("#audio-a");
   const record = document.querySelector("#record");
   const artworkLayers = [document.querySelector("#artwork"), document.querySelector("#artwork-next")];
-  const title = document.querySelector("#track-title");
+  const title = document.querySelector("#track-title-text");
+  const titleRow = document.querySelector("#track-title");
+  const skipButton = document.querySelector("#skip-button");
   const artist = document.querySelector("#artist");
   const trackInfo = document.querySelector("#track-info");
   const fill = document.querySelector("#progress-fill");
@@ -19,12 +21,13 @@
   let artworkRequestId = 0;
   let rotation = 0;
   let lastFrame = performance.now();
-  let clockOffset = 0;
   let transitionId = 0;
   let transitionPending = false;
-  let endedNextIndex = -1;
+  let handledEndedSource = "";
   let playbackStopped = false;
   let playbackGeneration = 0;
+  let initialPositionPending = false;
+  let skipTimer = 0;
   let audioContext = null;
   let analyser = null;
   let frequencyData = null;
@@ -69,17 +72,13 @@
     if (audioContext.state === "suspended") await audioContext.resume();
   }
 
-  function stateAt(time = Date.now()) {
-    const total = playlist.reduce((sum, track) => sum + track.duration, 0);
-    if (!playlist.length || !total) return null;
-    const elapsed = ((time + clockOffset - window.RADIO_EPOCH_MS) / 1000 % total + total) % total;
-    let cursor = 0;
-    for (let index = 0; index < playlist.length; index += 1) {
-      const track = playlist[index];
-      if (elapsed < cursor + track.duration) return { track, index, position: elapsed - cursor };
-      cursor += track.duration;
-    }
-    return { track: playlist[0], index: 0, position: 0 };
+  function randomStart() {
+    if (!playlist.length) return null;
+    const index = Math.floor(Math.random() * playlist.length);
+    const track = playlist[index];
+    const playableWindow = Math.max(0, track.duration - 10);
+    const position = playableWindow ? 5 + Math.random() * playableWindow : 0;
+    return { track, index, position };
   }
 
   function setArtwork(next) {
@@ -107,26 +106,64 @@
     void trackInfo.offsetWidth;
     trackInfo.classList.add("is-transitioning");
     title.textContent = next.track.title || "Untitled track";
+    skipButton.classList.remove("is-visible");
+    window.clearTimeout(skipTimer);
+    skipTimer = window.setTimeout(() => skipButton.classList.add("is-visible"), 10000);
     artist.textContent = next.track.artist || "Ty deBruyn Radio";
     const nextTrack = playlist[(next.index + 1) % playlist.length];
     upNext.textContent = nextTrack ? `UP NEXT: ${nextTrack.title || "Untitled track"}` : "UP NEXT: None";
     setArtwork(next);
+    fitTitle();
+  }
+
+  function fitTitle() {
+    titleRow.style.fontSize = "";
+    if (window.matchMedia("(max-width: 699px)").matches) {
+      title.style.whiteSpace = "normal";
+      title.style.overflow = "visible";
+      let fontSize = parseFloat(getComputedStyle(titleRow).fontSize);
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const style = getComputedStyle(title);
+        const lineHeight = parseFloat(style.lineHeight);
+        if (title.scrollHeight <= lineHeight * 2.05 || fontSize <= 18) break;
+        fontSize = Math.max(18, fontSize * .9);
+        titleRow.style.fontSize = `${fontSize}px`;
+      }
+      return;
+    }
+    const rowStyle = getComputedStyle(titleRow);
+    const availableWidth = titleRow.clientWidth - parseFloat(rowStyle.paddingLeft) - parseFloat(rowStyle.paddingRight);
+    const gap = parseFloat(getComputedStyle(titleRow).columnGap) || 0;
+    if (availableWidth <= 0) return;
+    title.style.whiteSpace = "nowrap";
+    title.style.overflow = "hidden";
+    let fontSize = parseFloat(getComputedStyle(titleRow).fontSize);
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const requiredWidth = title.scrollWidth + skipButton.offsetWidth + gap;
+      if (requiredWidth <= availableWidth || fontSize <= 18) break;
+      fontSize = Math.max(18, fontSize * availableWidth / requiredWidth);
+      titleRow.style.fontSize = `${fontSize}px`;
+    }
+    if (title.scrollWidth + skipButton.offsetWidth + gap > availableWidth) {
+      title.style.whiteSpace = "normal";
+      title.style.overflow = "visible";
+    }
   }
 
   function waitForAudioReady(id) {
     return new Promise((resolve) => {
-      if (audio.readyState >= 1) {
+      if (audio.readyState >= 3) {
         resolve(id === transitionId);
         return;
       }
       const finish = (loaded) => {
-        audio.removeEventListener("loadedmetadata", onLoaded);
+        audio.removeEventListener("canplay", onLoaded);
         audio.removeEventListener("error", onError);
         resolve(loaded && id === transitionId);
       };
       const onLoaded = () => finish(true);
       const onError = () => finish(false);
-      audio.addEventListener("loadedmetadata", onLoaded, { once: true });
+      audio.addEventListener("canplay", onLoaded, { once: true });
       audio.addEventListener("error", onError, { once: true });
     });
   }
@@ -136,6 +173,7 @@
     transitionPending = true;
     const url = new URL(next.track.url, window.location.href).href;
     audio.pause();
+    handledEndedSource = "";
     if (audio.src !== url) {
       audio.src = next.track.url;
       audio.load();
@@ -148,18 +186,13 @@
       status.textContent = "Audio could not be loaded.";
       return;
     }
-    const current = stateAt();
-    if (!current || current.index !== next.index) {
-      transitionPending = false;
-      synchronize(shouldPlay);
-      return;
-    }
-    audio.currentTime = current.position;
+    audio.currentTime = next.position;
     station = next;
     renderTrack(next);
     if (!shouldPlay) {
       transitionPending = false;
       player.classList.remove("is-playing");
+      showStartOverlay();
       return;
     }
     try {
@@ -173,6 +206,7 @@
       transitionPending = false;
       if (id !== transitionId) return;
       player.classList.remove("is-playing");
+      showStartOverlay();
       status.textContent = "Playback is blocked until the browser allows audio.";
     }
   }
@@ -187,17 +221,14 @@
       upNext.textContent = "UP NEXT: None";
       status.textContent = "The station is not configured with any music yet.";
       startOverlay.classList.add("is-hidden");
+      skipButton.classList.remove("is-visible");
+      window.clearTimeout(skipTimer);
       player.classList.remove("is-playing");
       return;
     }
     if (transitionPending || (station && station.index === next.index && audio.src)) return;
     status.textContent = "";
     loadTrack(next, shouldPlay);
-  }
-
-  function expectedPosition() {
-    const current = stateAt();
-    return current && station && current.index === station.index ? current.position : 0;
   }
 
   async function startAudio() {
@@ -207,14 +238,14 @@
     try {
       await setupAudioAnalyser();
       if (generation !== playbackGeneration || playbackStopped) return;
-      const current = stateAt();
+      const current = station;
       if (!current) return;
-      if (!station || station.index !== current.index || !audio.src) {
-        synchronize(true);
-        return;
+      if (!audio.src) return;
+      if (initialPositionPending) {
+        audio.currentTime = current.position;
+        initialPositionPending = false;
       }
-      const position = current.position;
-      if (audio.ended || Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
+      if (audio.ended) audio.currentTime = 0;
       await audio.play();
       if (generation !== playbackGeneration || playbackStopped) {
         audio.pause();
@@ -236,12 +267,17 @@
     startOverlayText.classList.add("is-entering");
   }
 
+  function skipTrack() {
+    if (transitionPending || !station || playlist.length < 2) return;
+    const nextIndex = (station.index + 1) % playlist.length;
+    loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, !audio.paused);
+  }
+
   async function stopPlayback() {
     playbackGeneration += 1;
     transitionId += 1;
     transitionPending = false;
     playbackStopped = true;
-    endedNextIndex = -1;
     audio.pause();
     player.classList.remove("is-playing");
     showStartOverlay();
@@ -254,74 +290,34 @@
     }
   }
 
-  function synchronize(shouldPlay = false) {
-    if (playbackStopped && shouldPlay) return;
-    const next = stateAt();
-    if (!next) {
-      setTrack(null);
-      return;
-    }
-    if (endedNextIndex >= 0) {
-      if (next.index !== endedNextIndex) return;
-      endedNextIndex = -1;
-      shouldPlay = true;
-    }
-    const changingTrack = Boolean(station && station.index !== next.index);
-    setTrack(next, shouldPlay);
-    if (changingTrack || transitionPending) return;
-    const position = next.position;
-    if (Math.abs((audio.currentTime || 0) - position) > 1.5) audio.currentTime = position;
-    if (shouldPlay && audio.paused) startAudio();
-  }
-
-  async function synchronizeClock() {
-    try {
-      const started = Date.now();
-      const response = await fetch(`playlist.js?clock=${started}`, { cache: "no-store" });
-      const date = response.headers.get("date");
-      if (!date) return;
-      const midpoint = started + (Date.now() - started) / 2;
-      clockOffset = Date.parse(date) - midpoint;
-    } catch (error) {
-      // The local clock remains the fallback when the hosting response has no Date header.
-    }
-  }
-
   startOverlay.addEventListener("click", startAudio);
+  skipButton.addEventListener("click", skipTrack);
   record.addEventListener("click", stopPlayback);
   audio.addEventListener("playing", () => player.classList.add("is-playing"));
   audio.addEventListener("pause", () => player.classList.remove("is-playing"));
   audio.addEventListener("ended", () => {
     if (playbackStopped) return;
-    const current = stateAt();
-    if (station && current && current.index === station.index && playlist.length > 1) {
-      endedNextIndex = (station.index + 1) % playlist.length;
-      station = null;
+    if (handledEndedSource === audio.currentSrc) return;
+    handledEndedSource = audio.currentSrc;
+    if (station) {
+      const nextIndex = (station.index + 1) % playlist.length;
+      loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, true);
       return;
     }
-    synchronize(true);
   });
   audio.addEventListener("error", () => {
     if (!transitionPending) status.textContent = "Audio could not be loaded.";
   });
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) synchronize(!audio.paused);
-  });
   setInterval(() => {
-    const next = stateAt();
-    if (!next) return;
-    if (endedNextIndex >= 0) {
-      if (next.index !== endedNextIndex) return;
-      synchronize(true);
-      return;
-    }
-    if (!station || station.index !== next.index) synchronize(!audio.paused);
-    fill.style.width = `${Math.min(100, Math.max(0, next.position / next.track.duration * 100))}%`;
-    if (!audio.paused && audio.readyState >= 3 && Math.abs(audio.currentTime - next.position) > 4) {
-      audio.currentTime = next.position;
-    }
+    if (!station) return;
+    fill.style.width = `${Math.min(100, Math.max(0, audio.duration ? audio.currentTime / audio.duration * 100 : 0))}%`;
   }, 250);
 
-  synchronizeClock().then(() => synchronize(false));
-  setInterval(() => synchronizeClock().then(() => synchronize(!audio.paused)), 30000);
+  window.addEventListener("resize", fitTitle);
+  const initialTrack = randomStart();
+  if (initialTrack) {
+    initialPositionPending = true;
+    loadTrack(initialTrack, false);
+  }
+  else setTrack(null);
 })();

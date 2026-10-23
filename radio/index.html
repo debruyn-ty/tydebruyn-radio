@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Ty deBruyn Radio">
   <title>Ty deBruyn Radio</title>
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=35">
 </head>
 <body>
   <main class="player" aria-labelledby="track-title">
@@ -23,25 +23,26 @@
       <div class="progress" aria-hidden="true">
         <span class="progress-line"><i id="progress-fill"></i></span>
       </div>
-      <h1 id="track-title">tydebruyn.me/radio</h1>
+      <h1 id="track-title"><span id="track-title-text">tydebruyn.me/radio</span><button id="skip-button" type="button" aria-label="Skip current song">⏭</button></h1>
       <p id="artist">loading...</p>
     </section>
 
     <nav class="social-links" aria-label="Ty deBruyn music links">
-      <a href="https://soundcloud.com/ty-debruyn" target="_blank" rel="noopener noreferrer">SoundCloud</a>
-      <a href="https://open.spotify.com/artist/0Rsh2Yg7biqC1TWyGqCqHf" target="_blank" rel="noopener noreferrer">Spotify</a>
-      <a href="https://music.apple.com/us/artist/ty-debruyn/6817621813" target="_blank" rel="noopener noreferrer">Apple Music</a>
-      <a href="https://linktr.ee/tydebruyn.dj" target="_blank" rel="noopener noreferrer">Linktree</a>
+      <a class="social-link" href="https://www.instagram.com/definitely.not.ty/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a class="social-link" href="https://soundcloud.com/ty-debruyn" target="_blank" rel="noopener noreferrer">SoundCloud</a>
+      <a class="social-link" href="https://open.spotify.com/artist/0Rsh2Yg7biqC1TWyGqCqHf" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a class="social-link" href="https://music.apple.com/us/artist/ty-debruyn/6817621813" target="_blank" rel="noopener noreferrer">Apple Music</a>
+      <a class="social-link" href="https://linktr.ee/tydebruyn.dj" target="_blank" rel="noopener noreferrer">Linktree</a>
     </nav>
 
     <p id="status" class="status" role="status" aria-live="polite"></p>
     <audio id="audio-a" preload="auto"></audio>
   </main>
-  <button id="start-overlay" class="start-overlay" type="button" aria-label="Start listening">
+  <button id="start-overlay" class="start-overlay is-hidden" type="button" aria-label="Start listening">
     <span class="is-entering start-text start-text-mobile">Tap Anywhere<br>To<br>Start Listening</span>
     <span class="is-entering start-text start-text-desktop">Click Anywhere<br>To<br>Start Listening</span>
   </button>
-  <script src="playlist.js"></script>
-  <script src="app.js?v=43" defer></script>
+  <script src="playlist.js?v=2"></script>
+  <script src="app.js?v=53" defer></script>
 </body>
 </html>

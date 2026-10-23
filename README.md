@@ -1,20 +1,10 @@
 # Ty deBruyn Radio
 
-Minimal, framework-free web radio designed for free GitHub Pages hosting. It uses a shared deterministic clock instead of PHP: every browser calculates the current track from the same UTC epoch, playlist order, and track durations.
+Minimal, framework-free web radio designed for free GitHub Pages hosting. Each listener starts at a random track position, then playback continues locally through the playlist.
 
-## How synchronization works
+## How playback works
 
-`radio/playlist.js` contains one shared `RADIO_EPOCH_MS` and the ordered playlist. Each browser calculates:
-
-```text
-elapsed = (current UTC time - epoch) modulo total playlist duration
-```
-
-It then selects the corresponding track and seeks to the corresponding offset. A visitor joining late therefore joins the same scheduled track rather than starting at the beginning.
-
-This is close synchronization, not a broadcast stream. Differences in device clocks, buffering, network speed, and audio decoding can create small offsets. The player corrects drift periodically. Local pauses affect only that visitor.
-
-The player estimates the hosting server's clock from the `Date` response header so devices with different system clocks select the same track. Track changes use the next deck's preloaded audio and preserve each MP3's own fade-out instead of applying a second audio gain ramp; the visual artwork transition remains gradual.
+The player chooses a random track and random starting position when the page loads. After the listener starts playback, tracks continue sequentially on that device. The skip button advances to the next track and disables no shared schedule because there is no live schedule. Track changes preserve each MP3's own fade-out; artwork transitions remain gradual.
 
 ## Add music
 
@@ -37,8 +27,6 @@ python scripts\generate_playlist.py
 ```
 
 If a track has no artwork, the player uses its neutral vinyl fallback. GitHub has file-size limits, so use short compressed MP3s or host larger audio files from a suitable static asset host.
-
-Change the epoch only when you intentionally want to restart the shared schedule. Keep the same epoch and playlist on all visitors. Adding or removing tracks changes the schedule for everyone; the workflow preserves the existing epoch.
 
 ## GitHub Pages deployment
 
@@ -63,8 +51,8 @@ DNS changes can take several hours.
 
 - `radio/index.html` — player markup.
 - `radio/styles.css` — responsive visual design.
-- `radio/app.js` — audio playback and synchronization.
-- `radio/playlist.js` — generated shared epoch and track list.
+- `radio/app.js` — local random audio playback.
+- `radio/playlist.js` — generated track list.
 - `mp3s/` — MP3 storage; add tracks here.
 - `scripts/generate_playlist.py` — ID3 metadata and artwork generator.
 - `.github/workflows/generate-playlist.yml` — automatic metadata generation on push.
@@ -80,4 +68,4 @@ From the project root, start any static server. If Python is installed:
 python -m http.server 8080
 ```
 
-Open `http://localhost:8080/radio/` in two browser windows, click **Tap to listen** in each, and verify that both show the same track and progress. Do not open the HTML with a `file://` URL because browsers restrict local module/assets behavior.
+Open `http://localhost:8080/radio/`, click **Tap to listen**, and verify that a random track starts at a non-zero position. Do not open the HTML with a `file://` URL because browsers restrict local asset behavior.
