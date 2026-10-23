@@ -147,8 +147,8 @@
     }
     if (title.scrollWidth + skipButton.offsetWidth + gap > availableWidth) {
       title.style.whiteSpace = "normal";
-      title.style.overflow = "visible";
     }
+    title.style.overflow = "visible";
   }
 
   function waitForAudioReady(id) {
