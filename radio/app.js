@@ -156,7 +156,9 @@
         resolve(id === transitionId);
         return;
       }
+      const timeout = window.setTimeout(() => finish(false), 15000);
       const finish = (loaded) => {
+        window.clearTimeout(timeout);
         audio.removeEventListener("canplay", onLoaded);
         audio.removeEventListener("error", onError);
         resolve(loaded && id === transitionId);
@@ -168,7 +170,7 @@
     });
   }
 
-  async function loadTrack(next, shouldPlay, showMetadataImmediately = false) {
+  async function loadTrack(next, shouldPlay, showMetadataImmediately = false, retry = true) {
     const id = ++transitionId;
     transitionPending = true;
     if (showMetadataImmediately) {
@@ -189,6 +191,12 @@
     const ready = await waitForAudioReady(id);
     if (id !== transitionId) return;
     if (!ready) {
+      if (retry) {
+        audio.removeAttribute("src");
+        audio.load();
+        loadTrack(next, shouldPlay, showMetadataImmediately, false);
+        return;
+      }
       transitionPending = false;
       player.classList.remove("is-playing");
       status.textContent = "Audio could not be loaded.";
@@ -278,7 +286,8 @@
   function skipTrack() {
     if (transitionPending || !station || playlist.length < 2) return;
     const nextIndex = (station.index + 1) % playlist.length;
-    loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, !audio.paused, true);
+    const shouldPlay = !audio.paused || player.classList.contains("is-playing");
+    loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, shouldPlay, true);
   }
 
   async function stopPlayback() {
