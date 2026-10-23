@@ -20,7 +20,7 @@ body { color: var(--ink); font-family: "Boldonse", Arial, sans-serif; font-weigh
 .progress { display: flex; align-items: center; margin-bottom: 1.6rem; }
 .progress-line { height: 15px; width: 100%; background: #f1e4e4; overflow: hidden; }
 #progress-fill { display: block; height: 100%; width: 0; background: var(--ink); transform-origin: left; }
-h1 { --title-size: clamp(2.1rem, 9vw, 6.5rem); width: 100%; max-width: 100%; min-width: 0; display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0 .45em; font-size: var(--title-size); line-height: .92; letter-spacing: -.065em; margin: 0; padding-right: .35rem; text-transform: uppercase; overflow: visible; overflow-wrap: normal; word-break: normal; hyphens: none; }
+h1 { --title-size: clamp(2.1rem, 9vw, 6.5rem); width: 100%; max-width: 100%; min-width: 0; display: flex; align-items: baseline; flex-wrap: nowrap; gap: 0 .45em; font-size: var(--title-size); line-height: 1; letter-spacing: -.065em; margin: 0; padding-right: .35rem; text-transform: uppercase; overflow: visible; overflow-wrap: normal; word-break: normal; hyphens: none; }
 #track-title-text { flex: 1 1 auto; min-width: 0; overflow: visible; overflow-wrap: break-word; word-break: normal; white-space: normal; }
 #skip-button { flex: 0 0 auto; border: 0; padding: 0 0 .18em; background: none; color: var(--ink); cursor: pointer; font: inherit; line-height: inherit; opacity: 0; pointer-events: none; transition: opacity 1.2s ease; }
 #skip-button.is-visible { opacity: 1; pointer-events: auto; }
@@ -45,7 +45,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outli
   .up-next { font-size: .7rem; margin-bottom: .45rem; }
   .progress { margin-bottom: 1.2rem; }
   .progress-line { height: 12px; }
-  h1 { align-items: flex-end; gap: 0 .2em; padding-right: .15rem; overflow: visible; font-size: clamp(2.5rem, 12vw, 4.5rem); line-height: .88; }
+  h1 { align-items: flex-end; gap: 0 .2em; padding-right: .15rem; overflow: visible; font-size: clamp(2.5rem, 12vw, 4.5rem); line-height: .95; }
   #track-title-text { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
   #skip-button { min-width: 2.75rem; min-height: 2.75rem; margin: -.55rem 0 -.55rem 0; padding: .55rem .35rem; }
   #artist { font-size: clamp(1.1rem, 4.5vw, 1.4rem); margin-top: .35rem; }

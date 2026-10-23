@@ -168,12 +168,17 @@
     });
   }
 
-  async function loadTrack(next, shouldPlay) {
+  async function loadTrack(next, shouldPlay, showMetadataImmediately = false) {
     const id = ++transitionId;
     transitionPending = true;
-    title.textContent = "...";
-    upNext.textContent = "...";
-    titleRow.style.fontSize = "";
+    if (showMetadataImmediately) {
+      station = next;
+      renderTrack(next);
+    } else {
+      title.textContent = "...";
+      upNext.textContent = "...";
+      titleRow.style.fontSize = "";
+    }
     const url = new URL(next.track.url, window.location.href).href;
     audio.pause();
     handledEndedSource = "";
@@ -191,7 +196,7 @@
     }
     audio.currentTime = next.position;
     station = next;
-    renderTrack(next);
+    if (!showMetadataImmediately) renderTrack(next);
     if (!shouldPlay) {
       transitionPending = false;
       player.classList.remove("is-playing");
@@ -273,7 +278,7 @@
   function skipTrack() {
     if (transitionPending || !station || playlist.length < 2) return;
     const nextIndex = (station.index + 1) % playlist.length;
-    loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, !audio.paused);
+    loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, !audio.paused, true);
   }
 
   async function stopPlayback() {
@@ -304,7 +309,7 @@
     handledEndedSource = audio.currentSrc;
     if (station) {
       const nextIndex = (station.index + 1) % playlist.length;
-      loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, true);
+      loadTrack({ track: playlist[nextIndex], index: nextIndex, position: 0 }, true, true);
       return;
     }
   });
