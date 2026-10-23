@@ -26,6 +26,7 @@
   let handledEndedSource = "";
   let playbackStopped = false;
   let playbackGeneration = 0;
+  let playAfterLoad = false;
   let initialPositionPending = false;
   let skipTimer = 0;
   let audioContext = null;
@@ -205,6 +206,10 @@
     audio.currentTime = next.position;
     station = next;
     if (!showMetadataImmediately) renderTrack(next);
+    if (playAfterLoad && station.index === next.index) {
+      shouldPlay = true;
+      playAfterLoad = false;
+    }
     if (!shouldPlay) {
       transitionPending = false;
       player.classList.remove("is-playing");
@@ -248,7 +253,19 @@
   }
 
   async function startAudio() {
-    if (transitionPending) return;
+    if (transitionPending) {
+      if (station) {
+        transitionId += 1;
+        transitionPending = false;
+        playAfterLoad = false;
+        playbackStopped = false;
+        loadTrack(station, true, true);
+        return;
+      }
+      playAfterLoad = true;
+      playbackStopped = false;
+      return;
+    }
     const generation = ++playbackGeneration;
     playbackStopped = false;
     try {
@@ -256,7 +273,10 @@
       if (generation !== playbackGeneration || playbackStopped) return;
       const current = station;
       if (!current) return;
-      if (!audio.src) return;
+      if (!audio.src || audio.readyState < 3) {
+        loadTrack(current, true, true);
+        return;
+      }
       if (initialPositionPending) {
         audio.currentTime = current.position;
         initialPositionPending = false;
@@ -295,7 +315,10 @@
     transitionId += 1;
     transitionPending = false;
     playbackStopped = true;
+    playAfterLoad = false;
     audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
     player.classList.remove("is-playing");
     showStartOverlay();
     status.textContent = "";
