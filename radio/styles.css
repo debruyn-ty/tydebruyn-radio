@@ -44,9 +44,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outli
   .up-next { font-size: .7rem; margin-bottom: .45rem; }
   .progress { margin-bottom: 1.2rem; }
   .progress-line { height: 12px; }
-  h1 { align-items: flex-end; gap: 0 .3em; padding-right: .15rem; overflow: visible; font-size: clamp(2.5rem, 12vw, 4.5rem); line-height: .88; }
-  #track-title-text { white-space: normal; overflow: visible; }
-  #skip-button { min-width: 2.75rem; min-height: 2.75rem; margin: -.55rem -.45rem -.55rem 0; padding: .55rem .45rem; }
+  h1 { align-items: flex-end; gap: 0 .2em; padding-right: .15rem; overflow: visible; font-size: clamp(2.5rem, 12vw, 4.5rem); line-height: .88; }
+  #track-title-text { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+  #skip-button { min-width: 2.75rem; min-height: 2.75rem; margin: -.55rem 0 -.55rem 0; padding: .55rem .35rem; }
   #artist { font-size: clamp(1.1rem, 4.5vw, 1.4rem); margin-top: .35rem; }
   .status { font-size: .75rem; margin-top: .75rem; }
   .social-links { flex-wrap: wrap; gap: .35rem; margin-top: .75rem; }

@@ -171,6 +171,9 @@
   async function loadTrack(next, shouldPlay) {
     const id = ++transitionId;
     transitionPending = true;
+    title.textContent = "...";
+    upNext.textContent = "...";
+    titleRow.style.fontSize = "";
     const url = new URL(next.track.url, window.location.href).href;
     audio.pause();
     handledEndedSource = "";
