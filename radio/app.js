@@ -75,11 +75,9 @@
 
   function randomStart() {
     if (!playlist.length) return null;
-    const index = Math.floor(Math.random() * playlist.length);
+    const index = 0;
     const track = playlist[index];
-    const playableWindow = Math.max(0, track.duration - 10);
-    const position = playableWindow ? 5 + Math.random() * playableWindow : 0;
-    return { track, index, position };
+    return { track, index, position: 0 };
   }
 
   function setArtwork(next) {

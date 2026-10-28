@@ -4,12 +4,12 @@
  */
 window.RADIO_PLAYLIST = [
   {
-    "id": "683947a93db415e1",
-    "title": "29th Ave.",
+    "id": "3e1c5da5cf00f458",
+    "title": "Body Language",
     "artist": "Ty deBruyn",
-    "duration": 144.692,
-    "url": "../mp3s/29th%20Ave..mp3",
-    "artwork": "assets/artwork/683947a93db415e1.png"
+    "duration": 211.911,
+    "url": "../mp3s/Ty%20deBruyn%20-%20BODY%20LANGUAGE.mp3",
+    "artwork": "assets/artwork/3e1c5da5cf00f458.png"
   },
   {
     "id": "f963cc815dd67dd0",
@@ -60,36 +60,12 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/bf05ea3e866321b1.png"
   },
   {
-    "id": "3e1c5da5cf00f458",
-    "title": "Body Language",
+    "id": "683947a93db415e1",
+    "title": "29th Ave.",
     "artist": "Ty deBruyn",
-    "duration": 211.911,
-    "url": "../mp3s/Ty%20deBruyn%20-%20BODY%20LANGUAGE.mp3",
-    "artwork": "assets/artwork/3e1c5da5cf00f458.png"
-  },
-  {
-    "id": "fad028c62ecabec1",
-    "title": "Flippin'",
-    "artist": "Ty deBruyn",
-    "duration": 189.414,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2001%20-%20Flippin%27.mp3",
-    "artwork": "assets/artwork/fad028c62ecabec1.png"
-  },
-  {
-    "id": "15fcb257952a1dec",
-    "title": "New York",
-    "artist": "Ty deBruyn",
-    "duration": 192.026,
-    "url": "../mp3s/Ty%20deBruyn%20-%20New%20York.mp3",
-    "artwork": "assets/artwork/15fcb257952a1dec.png"
-  },
-  {
-    "id": "1b1a432573ae4390",
-    "title": "Johnny Dollar",
-    "artist": "Ty deBruyn",
-    "duration": 245.29,
-    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2002%20-%20Johnny%20Dollar.mp3",
-    "artwork": "assets/artwork/1b1a432573ae4390.png"
+    "duration": 144.692,
+    "url": "../mp3s/29th%20Ave..mp3",
+    "artwork": "assets/artwork/683947a93db415e1.png"
   },
   {
     "id": "9d9d150b8dbcdb23",
@@ -100,6 +76,14 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/9d9d150b8dbcdb23.png"
   },
   {
+    "id": "15fcb257952a1dec",
+    "title": "New York",
+    "artist": "Ty deBruyn",
+    "duration": 192.026,
+    "url": "../mp3s/Ty%20deBruyn%20-%20New%20York.mp3",
+    "artwork": "assets/artwork/15fcb257952a1dec.png"
+  },
+  {
     "id": "b834212bd94e4eb6",
     "title": "Give It Up",
     "artist": "Ty deBruyn",
@@ -108,11 +92,27 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/b834212bd94e4eb6.png"
   },
   {
+    "id": "fad028c62ecabec1",
+    "title": "Flippin'",
+    "artist": "Ty deBruyn",
+    "duration": 189.414,
+    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2001%20-%20Flippin%27.mp3",
+    "artwork": "assets/artwork/fad028c62ecabec1.png"
+  },
+  {
     "id": "2eaa3156fadbb1e5",
     "title": "You Bet Your Life!",
     "artist": "Ty deBruyn",
     "duration": 194.194,
     "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2007%20-%20You%20Bet%20Your%20Life%21.mp3",
     "artwork": "assets/artwork/2eaa3156fadbb1e5.png"
+  },
+  {
+    "id": "1b1a432573ae4390",
+    "title": "Johnny Dollar",
+    "artist": "Ty deBruyn",
+    "duration": 245.29,
+    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2002%20-%20Johnny%20Dollar.mp3",
+    "artwork": "assets/artwork/1b1a432573ae4390.png"
   }
 ];
