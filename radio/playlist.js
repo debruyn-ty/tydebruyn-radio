@@ -12,12 +12,44 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/683947a93db415e1.png"
   },
   {
-    "id": "0c5872fc84ac9136",
-    "title": "ADRENALINE",
+    "id": "f963cc815dd67dd0",
+    "title": "Big Dawg",
     "artist": "Ty deBruyn",
-    "duration": 241.763,
-    "url": "../mp3s/Ty%20deBruyn%20-%20ADRENALINE.mp3",
-    "artwork": "assets/artwork/0c5872fc84ac9136.png"
+    "duration": 263.058,
+    "url": "../mp3s/Big%20Dawg.mp3",
+    "artwork": "assets/artwork/f963cc815dd67dd0.png"
+  },
+  {
+    "id": "75b0c57636d9d8b7",
+    "title": "De Nada",
+    "artist": "Ty deBruyn",
+    "duration": 181.765,
+    "url": "../mp3s/De%20Nada%20140BPM.mp3",
+    "artwork": "assets/artwork/75b0c57636d9d8b7.png"
+  },
+  {
+    "id": "8d796cb26864ae8d",
+    "title": "Inferno",
+    "artist": "Ty deBruyn",
+    "duration": 247.333,
+    "url": "../mp3s/Inferno.mp3",
+    "artwork": "assets/artwork/8d796cb26864ae8d.png"
+  },
+  {
+    "id": "b6a7c91457cd170a",
+    "title": "Porque Te Vas",
+    "artist": "Ty deBruyn",
+    "duration": 181.713,
+    "url": "../mp3s/Porque%20Te%20Vas.mp3",
+    "artwork": "assets/artwork/b6a7c91457cd170a.png"
+  },
+  {
+    "id": "f71e2a5fc0a387af",
+    "title": "Try",
+    "artist": "Ty deBruyn",
+    "duration": 144.724,
+    "url": "../mp3s/Try%20146BPM.mp3",
+    "artwork": "assets/artwork/f71e2a5fc0a387af.png"
   },
   {
     "id": "bf05ea3e866321b1",
@@ -44,46 +76,6 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/fad028c62ecabec1.png"
   },
   {
-    "id": "2349600b4469c797",
-    "title": "Can't Do It Alone",
-    "artist": "Ty deBruyn",
-    "duration": 173.845,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2002%20-%20Can%27t%20Do%20It%20Alone.mp3",
-    "artwork": "assets/artwork/2349600b4469c797.png"
-  },
-  {
-    "id": "c56694d24ba7c1a3",
-    "title": "Flutter",
-    "artist": "Ty deBruyn",
-    "duration": 192.026,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2003%20-%20Flutter.mp3",
-    "artwork": "assets/artwork/c56694d24ba7c1a3.png"
-  },
-  {
-    "id": "37221775aae8fc9b",
-    "title": "Throw Some",
-    "artist": "Ty deBruyn",
-    "duration": 198.426,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Double%20Vodka%20Soda%20-%2005%20-%20Throw%20Some.mp3",
-    "artwork": "assets/artwork/37221775aae8fc9b.png"
-  },
-  {
-    "id": "827dcb1dceead25b",
-    "title": "Everybody Get Down",
-    "artist": "Ty deBruyn",
-    "duration": 153.626,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Everybody%20Get%20Down.mp3",
-    "artwork": "assets/artwork/827dcb1dceead25b.jpg"
-  },
-  {
-    "id": "df0f8eea13d7b2fe",
-    "title": "Make Me Feel",
-    "artist": "Ty deBruyn",
-    "duration": 204.852,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Make%20Me%20Feel.mp3",
-    "artwork": "assets/artwork/df0f8eea13d7b2fe.png"
-  },
-  {
     "id": "15fcb257952a1dec",
     "title": "New York",
     "artist": "Ty deBruyn",
@@ -92,52 +84,12 @@ window.RADIO_PLAYLIST = [
     "artwork": "assets/artwork/15fcb257952a1dec.png"
   },
   {
-    "id": "c79ff88490daf23d",
-    "title": "PSP 1000",
-    "artist": "Ty deBruyn",
-    "duration": 204.042,
-    "url": "../mp3s/Ty%20deBruyn%20-%20PSP%201000.mp3",
-    "artwork": "assets/artwork/c79ff88490daf23d.png"
-  },
-  {
-    "id": "79be7cf37a2fc53e",
-    "title": "Right Now",
-    "artist": "Ty deBruyn",
-    "duration": 313.548,
-    "url": "../mp3s/Ty%20deBruyn%20-%20Right%20Now.mp3",
-    "artwork": "assets/artwork/79be7cf37a2fc53e.png"
-  },
-  {
-    "id": "bf5acf1d08fa9a85",
-    "title": "Atonement",
-    "artist": "Ty deBruyn",
-    "duration": 326.557,
-    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2000%20-%20Atonement.mp3",
-    "artwork": "assets/artwork/bf5acf1d08fa9a85.png"
-  },
-  {
-    "id": "a89d32872edbd84e",
-    "title": "Distruption Lottery",
-    "artist": "Ty deBruyn",
-    "duration": 151.458,
-    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2001%20-%20Distruption%20Lottery.mp3",
-    "artwork": "assets/artwork/a89d32872edbd84e.png"
-  },
-  {
     "id": "1b1a432573ae4390",
     "title": "Johnny Dollar",
     "artist": "Ty deBruyn",
     "duration": 245.29,
     "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2002%20-%20Johnny%20Dollar.mp3",
     "artwork": "assets/artwork/1b1a432573ae4390.png"
-  },
-  {
-    "id": "78d9e2b1d6fcaff3",
-    "title": "So What",
-    "artist": "Ty deBruyn",
-    "duration": 221.179,
-    "url": "../mp3s/Ty%20deBruyn%20-%20TY%20DEBRUYN%20-%2003%20-%20So%20What.mp3",
-    "artwork": "assets/artwork/78d9e2b1d6fcaff3.png"
   },
   {
     "id": "9d9d150b8dbcdb23",

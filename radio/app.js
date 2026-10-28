@@ -121,7 +121,7 @@
     titleRow.style.fontSize = "";
     if (window.matchMedia("(max-width: 699px)").matches) {
       title.style.whiteSpace = "normal";
-      title.style.overflow = "visible";
+      title.style.overflow = "hidden";
       let fontSize = parseFloat(getComputedStyle(titleRow).fontSize);
       for (let attempt = 0; attempt < 20; attempt += 1) {
         const style = getComputedStyle(title);
@@ -148,7 +148,7 @@
     if (title.scrollWidth + skipButton.offsetWidth + gap > availableWidth) {
       title.style.whiteSpace = "normal";
     }
-    title.style.overflow = "visible";
+    title.style.overflow = "hidden";
   }
 
   function waitForAudioReady(id) {
